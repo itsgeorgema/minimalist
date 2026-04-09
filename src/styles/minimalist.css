@@ -1,0 +1,835 @@
+/* --------------------------------------------------------------------------
+   Fonts (helvetica-255 — local files only)
+   -------------------------------------------------------------------------- */
+@font-face {
+  font-family: "Helvetica";
+  font-style: normal;
+  font-weight: 300;
+  src: url("/helvetica-255/helvetica-light-587ebe5a59211.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Helvetica";
+  font-style: normal;
+  font-weight: 400;
+  src: url("/helvetica-255/Helvetica.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Helvetica";
+  font-style: normal;
+  font-weight: 500;
+  src: url("/helvetica-255/Helvetica.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Helvetica";
+  font-style: normal;
+  font-weight: 700;
+  src: url("/helvetica-255/Helvetica-Bold.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Helvetica";
+  font-style: italic;
+  font-weight: 400;
+  src: url("/helvetica-255/Helvetica-Oblique.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Helvetica";
+  font-style: italic;
+  font-weight: 700;
+  src: url("/helvetica-255/Helvetica-BoldOblique.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Helvetica Compressed";
+  font-style: normal;
+  font-weight: 400;
+  src: url("/helvetica-255/helvetica-compressed-5871d14b6903a.otf") format("opentype");
+}
+
+/* --------------------------------------------------------------------------
+   Base (homepage + intro only)
+   -------------------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  background-color: #edeae4;
+  font-size: 62.5%;
+  height: 100%;
+  overscroll-behavior: none;
+}
+
+body {
+  color: #28282a;
+  font-family: "Helvetica";
+  font-size: 1.4rem;
+  font-weight: 400;
+  line-height: 1.6;
+  overscroll-behavior: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  height: auto;
+  width: 100%;
+}
+
+main {
+  display: block;
+}
+
+#content {
+  min-height: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Site shell + intro zoom target
+   -------------------------------------------------------------------------- */
+.site {
+  background-color: transparent;
+  height: auto;
+  position: relative;
+  width: 100%;
+  z-index: 2;
+  transition: transform 1300ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+body.intro-active .site {
+  transform: translateY(var(--intro-translate-y, 0px))
+    scale(var(--intro-scale, 0.24));
+  transform-origin: top center;
+  will-change: transform;
+}
+
+/* Hide .site until applyIntroZoomFit has set the CSS variables via inline style.
+   Once the style attribute contains --intro-translate-y the selector no longer
+   matches and the element becomes visible — zero flash, correct position. */
+body.intro-active .site:not([style*="--intro-translate-y"]) {
+  opacity: 0;
+}
+
+body.intro-active.intro-ready .site {
+  transform: translateY(0) scale(1);
+  transform-origin: top center;
+}
+
+body.intro-active:not(.intro-ready) .site {
+  transition: none;
+}
+
+/* Kill the transition the instant intro-active is removed so the lingering
+   transform property doesn't break position:fixed on the header. */
+body:not(.intro-active) .site {
+  transition: none;
+}
+
+/* --------------------------------------------------------------------------
+   Viewport chrome (outside .site)
+   -------------------------------------------------------------------------- */
+.intro-side-brand {
+  color: #28282a;
+  display: flex;
+  flex-direction: column;
+  font-family: "Helvetica";
+  font-size: clamp(12px, 2vw, 18px);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  line-height: 1.28;
+  pointer-events: none;
+  position: fixed;
+  right: clamp(8px, 2.5vw, 22px);
+  top: 50%;
+  transition: opacity 450ms ease;
+  transform: translateY(-50%);
+  z-index: 1;
+}
+
+.label-global {
+  bottom: clamp(10px, 2vw, 20px);
+  color: #28282a;
+  display: block !important;
+  font-family: "Helvetica";
+  font-size: clamp(9px, 0.75vw, 12px);
+  font-weight: 700;
+  left: clamp(10px, 2vw, 20px);
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+  max-width: none;
+  pointer-events: none;
+  position: fixed;
+  white-space: nowrap;
+  width: auto;
+  transition: opacity 450ms ease;
+  z-index: 1;
+}
+
+body.intro-ready .intro-side-brand,
+body.intro-ready .label-global,
+body:not(.intro-active) .intro-side-brand,
+body:not(.intro-active) .label-global {
+  opacity: 0;
+}
+
+@media (max-width: 960px) {
+  .label-global {
+    font-size: 8px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Header
+   -------------------------------------------------------------------------- */
+#site-header {
+  align-items: flex-end;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  left: 0;
+  padding: 27px 20px;
+  position: fixed;
+  top: 0;
+  transition: opacity 650ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 650ms cubic-bezier(0.22, 1, 0.36, 1);
+  width: 100%;
+  z-index: 10;
+}
+
+/* During the intro zoom, header is absolutely positioned inside .site so it
+   scales with the page. The moment intro-active is removed (same tick scrolling
+   is enabled), position:fixed takes over with zero visual jump because .site's
+   transform is already at scale(1) by then. */
+body.intro-active #site-header {
+  position: absolute;
+  will-change: transform, opacity;
+}
+
+body.intro-active:not(.intro-header-in) #site-header {
+  opacity: 0;
+  transform: translate3d(0, -18px, 0);
+}
+
+body.intro-active.intro-header-in #site-header,
+body:not(.intro-active) #site-header {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+body.intro-ready #site-header {
+  opacity: 1;
+}
+
+#site-header .site-header__left,
+#site-header .site-header__right {
+  flex: 1;
+  position: relative;
+  top: -4px;
+}
+
+#site-header .site-header__right {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+}
+
+#site-header h2,
+#site-header h2 a,
+#site-header h2 span,
+#site-header .header-info {
+  font-size: 1.6rem;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+#site-header .header-nav a {
+  font-size: 2.4rem;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 0.8333;
+  position: relative;
+}
+
+
+#site-header .menu-dot-container {
+  display: inline-block;
+  line-height: 0;
+  position: relative;
+  transform-origin: 14px 10px;
+}
+
+#site-header .menu-dot-container .menu-dot {
+  display: inline-block;
+  height: 16px;
+  margin-left: 5px;
+  position: relative;
+  top: 3px;
+  width: 16px;
+}
+
+#site-header .menu-dot-container .menu-dot circle {
+  animation: statusPulse 1.8s ease-in-out infinite;
+  fill: #000;
+  transform-origin: 50% 50%;
+}
+
+@keyframes statusPulse {
+  0%,
+  20%,
+  80%,
+  100% {
+    fill: #000;
+    opacity: 0.85;
+  }
+  30%,
+  70% {
+    fill: #3ea964;
+    opacity: 1;
+  }
+}
+
+@media (max-width: 960px) {
+  #site-header .menu-dot-container {
+    display: none;
+  }
+}
+
+@media (max-width: 960px) {
+  #site-header {
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 17px 10px;
+  }
+
+  #site-header .header-nav {
+    display: none;
+  }
+
+  #site-header .site-header__left,
+  #site-header .site-header__right {
+    flex-basis: auto;
+    flex-grow: 0;
+    top: 0;
+  }
+
+  #site-header h2,
+  #site-header h2 a,
+  #site-header h2 span,
+  #site-header .header-info {
+    font-size: 1.6rem;
+  }
+
+  #site-header .logo::after {
+    content: "—";
+    font-size: inherit;
+    padding: 0 1px;
+  }
+
+  #site-header .header-nav a {
+    font-size: 1rem;
+    line-height: 1;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Intro: content fades (inside .site)
+   -------------------------------------------------------------------------- */
+body.intro-active {
+  overflow: hidden;
+}
+
+body.intro-active #site-footer,
+body.intro-active .grid__item-content,
+body.intro-active .credit-link {
+  opacity: 0;
+  will-change: opacity;
+}
+
+body.intro-active #homepage .grid__animation-wrapper {
+  opacity: 0;
+  pointer-events: none;
+}
+
+
+body.intro-active.intro-unveiled #homepage .grid__animation-wrapper {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+body.intro-active.intro-header-in #site-footer,
+body.intro-active.intro-header-in .grid__item-content,
+body.intro-active.intro-header-in .credit-link {
+  opacity: 1;
+}
+
+#site-footer,
+.grid__item-content,
+.credit-link {
+  transition: opacity 650ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.grid__item-image,
+#homepage .grid__animation-wrapper {
+  transition: opacity 650ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 650ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+body.intro-ready #site-footer {
+  opacity: 1;
+}
+
+/* After intro, keep page visible (do not rely on .intro-ready — that class is removed). */
+body:not(.intro-active) .page-wrapper {
+  opacity: 1;
+  visibility: visible;
+}
+
+body:not(.intro-active) #site-footer {
+  opacity: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Homepage
+   -------------------------------------------------------------------------- */
+.page-wrapper {
+  opacity: 1;
+  transition: opacity 0ms;
+  visibility: visible;
+}
+
+#homepage {
+  background-color: transparent;
+  overflow: hidden;
+  position: relative;
+}
+
+body.intro-active:not(.intro-unveiled) #homepage {
+  background-color: transparent;
+}
+
+#homepage .scroll-wrapper {
+  background-color: transparent;
+}
+
+#homepage .container {
+  padding: 6.6vw 20px 12vw;
+}
+
+@media (max-width: 960px) {
+  #homepage .container {
+    padding: 90px 10px;
+  }
+}
+
+.title {
+  position: relative;
+  z-index: 30;
+}
+
+#homepage .title {
+  font-size: clamp(1px, 38.89vw, 500px);
+  font-weight: 700;
+  letter-spacing: -0.09em;
+  line-height: 0.8;
+  margin-bottom: calc(-1.35vw + 25px);
+  transform: scaleX(0.97);
+  transform-origin: left center;
+}
+
+@media (max-width: 960px) {
+  #homepage .title {
+    font-size: clamp(1px, 36.9vw, 415px);
+    margin-bottom: calc(-1.35vw + 15px);
+  }
+}
+
+#homepage .title--bottom {
+  margin-bottom: 0;
+  margin-top: calc(-1vw + 25px);
+}
+
+@media (max-width: 960px) {
+  #homepage .title--bottom {
+    margin-top: calc(-1vw + 15px);
+  }
+}
+
+#homepage .credit-link {
+  font-size: 1rem;
+  font-weight: 500;
+  height: 18px;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  position: absolute;
+  right: 0;
+  text-align: center;
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+  top: 50%;
+  transform: rotate(-90deg) translateY(83px);
+  white-space: nowrap;
+  width: 180px;
+  z-index: 9;
+}
+
+@media (max-width: 960px) {
+  #homepage .credit-link {
+    display: none;
+  }
+}
+
+#homepage .grid__animation-wrapper {
+  overflow: hidden;
+  position: relative;
+}
+
+/* Featured image: canvas shows through until gray base clip-reveals (no full-bleed overlay) */
+#homepage .grid__item .responsive-image.hero-featured-image {
+  background: transparent !important;
+}
+
+#homepage .hero-image-base {
+  background-color: #d4d1cb;
+  clip-path: inset(100% 0 0 0);
+  display: block;
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 1;
+}
+
+/* Gray “slides” on only inside the frame: clipped region stays transparent → canvas */
+body.intro-unveiled #homepage .hero-image-base {
+  animation: heroGrayReveal 950ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+body:not(.intro-active) #homepage .hero-image-base {
+  animation: none;
+  clip-path: inset(0 0 0 0);
+}
+
+@keyframes heroGrayReveal {
+  from {
+    clip-path: inset(100% 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+#homepage .hero-featured-img {
+  transition: opacity 750ms cubic-bezier(0.22, 1, 0.36, 1) 100ms;
+  z-index: 3;
+}
+
+body.intro-active #homepage .hero-featured-img {
+  opacity: 0;
+  will-change: opacity;
+}
+
+body.intro-active.intro-header-in #homepage .hero-featured-img,
+body:not(.intro-active) #homepage .hero-featured-img {
+  opacity: 1;
+}
+
+#homepage .grid {
+  align-items: flex-end;
+  display: flex;
+  flex-flow: row wrap;
+  flex: 0 1 auto;
+  justify-content: space-between;
+  margin-left: -10px;
+  margin-right: -10px;
+}
+
+@media (max-width: 960px) {
+  #homepage .grid {
+    justify-content: flex-start;
+    margin-left: -5px;
+    margin-right: -5px;
+  }
+}
+
+#homepage .grid__item--featured {
+  cursor: default;
+}
+
+#homepage .grid--layout-0 .grid__item--featured {
+  flex-basis: 100%;
+  margin-bottom: 0;
+  margin-left: 10px;
+  margin-right: 10px;
+  width: 100%;
+}
+
+@media (max-width: 960px) {
+  #homepage .grid--layout-0 .grid__item--featured {
+    flex-basis: calc(100% - 10px);
+    margin-left: 5px;
+    margin-right: 5px;
+    width: calc(100% - 10px);
+  }
+}
+
+#homepage .grid--layout-0 .grid__item--side {
+  display: none;
+}
+
+#homepage .grid__item .responsive-image {
+  background: #d4d1cb !important;
+}
+
+#homepage .grid__item-content {
+  align-items: flex-end;
+  display: flex;
+  flex-direction: row;
+  height: 20px;
+}
+
+#homepage .grid__item-content h2 {
+  font-size: 1.4rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin-left: 8px;
+  text-transform: uppercase;
+}
+
+#homepage .grid__item-content p {
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+@media (max-width: 960px) {
+  #homepage .grid__item-content {
+    height: auto;
+  }
+
+  #homepage .grid__item-content h2 {
+    font-size: 1rem;
+    margin-left: 0;
+    margin-top: 4px;
+  }
+
+  #homepage .grid__item-content p {
+    display: none;
+  }
+}
+
+.responsive-image {
+  display: block;
+  line-height: 0;
+  padding-top: 83.333%;
+  position: relative;
+  width: 100%;
+}
+
+.responsive-image > img {
+  bottom: 0;
+  height: 100%;
+  left: 0;
+  object-fit: cover;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   Footer
+   -------------------------------------------------------------------------- */
+#site-footer .site-footer__left .footer-dot {
+  background-color: #28282a;
+  border-radius: 50%;
+  display: none;
+  height: 8px;
+  margin-right: 4px;
+  margin-top: 1px;
+  width: 8px;
+}
+
+@media (max-width: 960px) {
+  #site-footer .site-footer__left .footer-dot {
+    display: inline-block;
+  }
+}
+
+#site-footer {
+  padding: 0 20px;
+  position: relative;
+  z-index: 1;
+}
+
+#site-footer .site-footer__grid {
+  align-items: flex-start;
+  display: flex;
+  flex: 0 1 auto;
+  flex-flow: row wrap;
+  justify-content: flex-start;
+  margin-left: -10px;
+  margin-right: -10px;
+}
+
+#site-footer .site-footer__left {
+  display: flex;
+  flex-basis: calc(25% - 20px);
+  flex-direction: row;
+  margin-bottom: 20px;
+  margin-left: 10px;
+  margin-right: 10px;
+  width: calc(25% - 20px);
+}
+
+#site-footer .site-footer__details {
+  display: flex;
+  flex-basis: calc(33.33333% - 20px);
+  flex-direction: row;
+  margin-bottom: 20px;
+  margin-left: 10px;
+  margin-right: 10px;
+  width: calc(33.33333% - 20px);
+}
+
+#site-footer .site-footer__details .footer-dot {
+  background-color: #28282a;
+  border-radius: 50%;
+  display: block;
+  flex-shrink: 0;
+  height: 17px;
+  margin-right: 9%;
+  width: 17px;
+}
+
+#site-footer .site-footer__links {
+  display: flex;
+  flex-basis: calc(25% - 20px);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 20px;
+  margin-left: 10px;
+  margin-right: 10px;
+  width: calc(25% - 20px);
+}
+
+#site-footer .site-footer__copyright {
+  flex-basis: calc(16.66667% - 20px);
+  margin-bottom: 20px;
+  margin-left: 10px;
+  margin-right: 10px;
+  width: calc(16.66667% - 20px);
+}
+
+#site-footer .site-footer__copyright h3 {
+  text-transform: none;
+}
+
+#site-footer .geo-tag {
+  align-items: center;
+  display: inline-flex;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 1.6rem;
+  font-weight: 700;
+  gap: 8px;
+  letter-spacing: 0.08em;
+  margin-top: 6px;
+  padding: 4px 10px 3px 0;
+  text-transform: uppercase;
+  width: fit-content;
+}
+
+#site-footer .geo-tag span:nth-child(2) {
+  opacity: 0.45;
+}
+
+#site-footer a,
+#site-footer h3 {
+  font-family: "Helvetica";
+  font-size: 1.8rem;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+#site-footer a {
+  display: inline-block;
+  width: fit-content;
+  transition: opacity 0.35s ease;
+}
+
+#site-footer .site-footer__links a:hover,
+#site-footer .site-footer__links a:focus-visible {
+  opacity: 0.5;
+}
+
+@media (max-width: 960px) {
+  #site-footer {
+    padding: 0 10px;
+  }
+
+  #site-footer .site-footer__grid {
+    margin-left: -5px;
+    margin-right: -5px;
+  }
+
+  #site-footer .site-footer__left {
+    flex-basis: calc(62.5% - 10px);
+    margin-bottom: 10px;
+    margin-left: 5px;
+    margin-right: 5px;
+    width: calc(62.5% - 10px);
+  }
+
+  #site-footer .site-footer__details {
+    display: none;
+  }
+
+  #site-footer .site-footer__links {
+    display: none;
+  }
+
+  #site-footer .site-footer__copyright {
+    flex-basis: calc(37.5% - 10px);
+    margin-bottom: 10px;
+    margin-left: 5px;
+    margin-right: 5px;
+    width: calc(37.5% - 10px);
+  }
+
+  #site-footer a,
+  #site-footer h3 {
+    font-size: 1rem;
+    letter-spacing: -0.03em;
+  }
+
+  #site-footer .geo-tag {
+    font-size: 0.9rem;
+    gap: 6px;
+    margin-top: 0;
+    padding: 3px 8px 2px 0;
+  }
+}

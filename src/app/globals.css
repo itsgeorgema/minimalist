@@ -1,0 +1,30 @@
+@import "../styles/minimalist.css";
+
+@tailwind utilities;
+
+/* Make all text unselectable */
+html,
+body,
+body * {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* If you add inputs later, keep them usable */
+input,
+textarea,
+button {
+  -webkit-user-select: auto;
+  user-select: auto;
+}
+
+/* Custom cursor (matches portfolio globals intent) */
+body.elastic-cursor-active,
+body.elastic-cursor-active * {
+  cursor: none !important;
+}
+
+div[style*="backdrop-filter: invert(100%)"] {
+  pointer-events: none !important;
+  z-index: 999999 !important;
+}
