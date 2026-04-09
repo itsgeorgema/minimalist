@@ -1,12 +1,18 @@
 "use client";
 /* eslint-disable @next/next/no-img-element -- parity with static site; optimize later */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 
+gsap.registerPlugin(ScrollToPlugin);
+
 export default function HomePage() {
   const [year, setYear] = useState<number | null>(null);
+  const milanSectionRef = useRef<HTMLDivElement>(null);
+  const milanTrackRef = useRef<HTMLDivElement>(null);
+  const milanImageRef = useRef<HTMLDivElement>(null);
+  const milanTextRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function scrollTopZero() {
@@ -145,6 +151,197 @@ export default function HomePage() {
     };
   }, []);
 
+  /* -----------------------------------------------------------------------
+     Three-phase animation:
+       "above"  — scroll-driven width compression (scrollY 0 → lockTriggerY)
+       "locked" — page scroll frozen, wheel/touch drives slide-left + text
+       "below"  — animation complete, free scroll
+
+     Reverse is exactly symmetric: "below" → "locked" at progress 1 → "above".
+
+     marginLeft uses a SINGLE keyframe tween so one tween owns that property
+     the whole way — eliminates the reverse-scrub jump caused by overlapping
+     tweens fighting over the same property.
+     ----------------------------------------------------------------------- */
+  useEffect(() => {
+    const imgWrap = milanImageRef.current;
+    const textPanel = milanTextRef.current;
+    const trackEl = milanTrackRef.current;
+    if (!imgWrap || !textPanel || !trackEl) return;
+
+    const waitForIntro = () =>
+      new Promise<void>((resolve) => {
+        const check = () => {
+          if (!document.body.classList.contains("intro-active")) resolve();
+          else requestAnimationFrame(check);
+        };
+        check();
+      });
+
+    const tl = gsap.timeline({ paused: true });
+    const SENSITIVITY = 0.0014;
+    const RECT_LOCK_THRESHOLD = -80; // rect.top at which page scroll locks
+
+    // Explicit durations so COMPRESSION_PROGRESS is exact
+    const D_COMPRESS = 0.5; // width compression + centre
+    const D_SLIDE    = 0.5; // slide to left edge
+    // progress = 0.5 is the handoff point between scroll-driven and wheel-driven
+    const COMPRESSION_PROGRESS = D_COMPRESS / (D_COMPRESS + D_SLIDE); // 0.5
+
+    gsap.set(imgWrap, { width: "100%", marginLeft: "0%" });
+    gsap.set(textPanel, { opacity: 0, x: 0, visibility: "hidden" });
+
+    // Width compression (scroll-driven phase covers this)
+    tl.to(imgWrap, { width: "48%", ease: "power2.inOut", duration: D_COMPRESS }, 0);
+
+    // marginLeft as ONE keyframe tween — single ownership means perfect reverse scrub
+    tl.to(imgWrap, {
+      keyframes: [
+        { marginLeft: "26%", duration: D_COMPRESS, ease: "power2.inOut" }, // → centre
+        { marginLeft: "0%",  duration: D_SLIDE,    ease: "power2.inOut" }, // → left
+      ],
+    }, 0);
+
+    // Text reveal (during slide phase)
+    tl.fromTo(
+      textPanel,
+      { opacity: 0, x: 80, visibility: "hidden" },
+      { opacity: 1, x: 0, visibility: "visible", ease: "power2.out", duration: 0.35 },
+      D_COMPRESS + 0.1
+    );
+    tl.to({}, { duration: 0.05 });
+
+    // lockTriggerY = window.scrollY when trackEl.getBoundingClientRect().top === RECT_LOCK_THRESHOLD
+    let lockTriggerY = 0;
+    const computeTrigger = () => {
+      const trackDocTop = trackEl.getBoundingClientRect().top + window.scrollY;
+      lockTriggerY = trackDocTop - RECT_LOCK_THRESHOLD;
+    };
+
+    let phase: "above" | "locked" | "below" = "above";
+    let lockedProgress = 0; // kept in sync across all phases
+    let touchStartY = 0;
+    let lastScrollY = 0;
+
+    const doLock = (progress: number) => {
+      if (phase === "locked") return;
+      lockedProgress = progress;
+      tl.progress(progress);
+      document.body.style.position = "fixed";
+      document.body.style.top      = `-${lockTriggerY}px`;
+      document.body.style.left     = "0";
+      document.body.style.right    = "0";
+      document.body.style.width    = "100%";
+      document.body.style.overflow = "hidden";
+      phase = "locked";
+    };
+
+    const doUnlock = (direction: -1 | 1, nextPhase: "above" | "below") => {
+      if (phase !== "locked") return;
+      document.body.style.position = "";
+      document.body.style.top      = "";
+      document.body.style.left     = "";
+      document.body.style.right    = "";
+      document.body.style.width    = "";
+      document.body.style.overflow = "";
+      const target = Math.max(0, lockTriggerY + direction * 2);
+      window.scrollTo(0, target);
+      lastScrollY = target;
+      phase = nextPhase;
+    };
+
+    const scrub = (deltaY: number) => {
+      if (phase !== "locked") return;
+      const next = gsap.utils.clamp(0, 1, lockedProgress + deltaY * SENSITIVITY);
+      lockedProgress = next;
+      tl.progress(next);
+      if (next >= 1 && deltaY > 0) {
+        doUnlock(1, "below");               // complete → resume forward scroll
+      } else if (next <= COMPRESSION_PROGRESS && deltaY < 0) {
+        doUnlock(-1, "above");              // reversed to handoff → scroll-driven takes over
+      }
+    };
+
+    const onWheel = (e: WheelEvent) => {
+      if (phase !== "locked") return;
+      e.preventDefault();
+      scrub(e.deltaY);
+    };
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (phase !== "locked" || e.touches.length === 0) return;
+      touchStartY = e.touches[0].clientY;
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (phase !== "locked" || e.touches.length === 0) return;
+      e.preventDefault();
+      const dy = touchStartY - e.touches[0].clientY;
+      touchStartY = e.touches[0].clientY;
+      scrub(dy);
+    };
+
+    const onScroll = () => {
+      if (phase === "locked") return;
+      const currentScrollY = window.scrollY;
+      const scrollingDown  = currentScrollY > lastScrollY;
+      lastScrollY = currentScrollY;
+
+      if (phase === "above") {
+        // Scroll-driven: map scrollY [0, lockTriggerY] → progress [0, COMPRESSION_PROGRESS]
+        const p = lockTriggerY > 0
+          ? Math.min(COMPRESSION_PROGRESS, (currentScrollY / lockTriggerY) * COMPRESSION_PROGRESS)
+          : COMPRESSION_PROGRESS;
+        lockedProgress = p;
+        tl.progress(p);
+
+        if (scrollingDown && currentScrollY >= lockTriggerY) {
+          doLock(COMPRESSION_PROGRESS); // hand off to wheel-driven
+        }
+      } else {
+        // "below": animation stays at 1; re-lock when crossing trigger going UP
+        if (!scrollingDown && currentScrollY <= lockTriggerY) {
+          doLock(1);
+        }
+      }
+    };
+
+    let cleanup = () => {};
+
+    waitForIntro().then(() => {
+      computeTrigger();
+      lastScrollY = window.scrollY;
+      tl.progress(0);
+
+      window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", computeTrigger);
+      window.addEventListener("wheel", onWheel, { passive: false });
+      window.addEventListener("touchstart", onTouchStart, { passive: true });
+      window.addEventListener("touchmove", onTouchMove, { passive: false });
+
+      cleanup = () => {
+        window.removeEventListener("scroll", onScroll);
+        window.removeEventListener("resize", computeTrigger);
+        window.removeEventListener("wheel", onWheel);
+        window.removeEventListener("touchstart", onTouchStart);
+        window.removeEventListener("touchmove", onTouchMove);
+      };
+    });
+
+    return () => {
+      cleanup();
+      if (phase === "locked") {
+        document.body.style.position = "";
+        document.body.style.top      = "";
+        document.body.style.left     = "";
+        document.body.style.right    = "";
+        document.body.style.width    = "";
+        document.body.style.overflow = "";
+      }
+      tl.kill();
+    };
+  }, []);
+
   useEffect(() => {
     const timeEl = document.querySelector(".time");
     if (!timeEl) return;
@@ -223,7 +420,7 @@ export default function HomePage() {
       </header>
 
       <main id="content">
-        <section className="page-wrapper layout-0" id="homepage">
+        <section className="page-wrapper layout-0" id="homepage" ref={milanSectionRef}>
           <div className="scroll-wrapper">
             <div className="container">
               <h2 className="title">George</h2>
@@ -231,31 +428,39 @@ export default function HomePage() {
                 Photographed in Milan, Italy
               </p>
 
-              <div className="grid__animation-wrapper">
-                <div className="grid grid--layout-0" data-name="Compartment Chair">
-                  <a
-                    href="#"
-                    className="grid__item grid__item--featured cursor-can-hover"
-                    aria-label="Compartment Chair"
-                  >
-                    <div className="grid__item-image">
-                      <div
-                        className="responsive-image hero-featured-image"
-                        style={{ paddingTop: "125%" }}
+              <div className="animation-scroll-track" ref={milanTrackRef}>
+                <div className="animation-sticky-frame">
+                  <div className="grid__animation-wrapper" ref={milanImageRef}>
+                    <div className="grid grid--layout-0" data-name="Compartment Chair">
+                      <a
+                        href="#"
+                        className="grid__item grid__item--featured cursor-can-hover"
+                        aria-label="Compartment Chair"
                       >
-                        <span className="hero-image-base" aria-hidden="true" />
-                        <img
-                          className="hero-featured-img"
-                          src="/assets/milan.png"
-                          alt="Featured"
-                          width={1600}
-                          height={2000}
-                          loading="eager"
-                          fetchPriority="high"
-                        />
-                      </div>
+                        <div className="grid__item-image">
+                          <div
+                            className="responsive-image hero-featured-image"
+                            style={{ paddingTop: "125%" }}
+                          >
+                            <span className="hero-image-base" aria-hidden="true" />
+                            <img
+                              className="hero-featured-img"
+                              src="/assets/milan.png"
+                              alt="Featured"
+                              width={1600}
+                              height={2000}
+                              loading="eager"
+                              fetchPriority="high"
+                            />
+                          </div>
+                        </div>
+                      </a>
                     </div>
-                  </a>
+                  </div>
+
+                  <div className="milan-text-panel" ref={milanTextRef}>
+                    {/* Placeholder — add your text content here */}
+                  </div>
                 </div>
               </div>
 

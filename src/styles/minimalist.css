@@ -419,7 +419,6 @@ body:not(.intro-active) #site-footer {
 
 #homepage {
   background-color: transparent;
-  overflow: hidden;
   position: relative;
 }
 
@@ -433,6 +432,7 @@ body.intro-active:not(.intro-unveiled) #homepage {
 
 #homepage .container {
   padding: 6.6vw 20px 12vw;
+  position: relative;
 }
 
 @media (max-width: 960px) {
@@ -499,7 +499,6 @@ body.intro-active:not(.intro-unveiled) #homepage {
 }
 
 #homepage .grid__animation-wrapper {
-  overflow: hidden;
   position: relative;
 }
 
@@ -655,6 +654,42 @@ body:not(.intro-active) #homepage .hero-featured-img {
   right: 0;
   top: 0;
   width: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   Milan scroll animation — sticky track + text panel
+   -------------------------------------------------------------------------- */
+.animation-scroll-track {
+  position: relative;
+}
+
+.animation-sticky-frame {
+  position: relative;
+}
+
+#homepage .grid__animation-wrapper {
+  will-change: clip-path, transform;
+}
+
+.milan-text-panel {
+  height: 100%;
+  opacity: 0;
+  padding: 0 4vw;
+  pointer-events: none;
+  position: absolute;
+  right: 20px;
+  top: 0;
+  visibility: hidden;
+  width: 45%;
+  display: flex;
+  align-items: center;
+  z-index: 5;
+}
+
+@media (max-width: 960px) {
+  .milan-text-panel {
+    display: none;
+  }
 }
 
 /* --------------------------------------------------------------------------

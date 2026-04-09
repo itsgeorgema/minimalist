@@ -240,8 +240,8 @@ export default function CanvasBackground() {
         back:     { value: backColor },
         style:    { value: 1.0 },   // monospaced: snaps UVs to 50×50 grid
         param1:   { value: 1.0 },   // grain scale
-        param2:   { value: 0.07 },  // grain displacement strength
-        param3:   { value: 0.24 },  // noise density
+        param2:   { value: 0.06 },  // grain displacement strength
+        param3:   { value: 0.22 },  // noise density
       },
       vertexShader: VERT,
       fragmentShader: FRAG,
