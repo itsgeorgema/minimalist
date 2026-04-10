@@ -198,7 +198,7 @@ export default function HomePage() {
     tl.to(imgWrap, {
       keyframes: [
         { marginLeft: "26%", duration: 0.7, ease: "power2.in" }, // compress → centre
-        { marginLeft: "0%",  duration: 0.9, ease: "power2.inOut" }, // slide to left edge
+        { marginLeft: "0%",  duration: 0.9, ease: "power3.out" }, // slide to left edge
       ],
     }, 0);
     // Text panel drifts in during the slide phase
@@ -236,7 +236,7 @@ export default function HomePage() {
         locoScroll = new LocomotiveScroll({
           // ── Lenis smooth-scroll options ──────────────────────────────────
           lenisOptions: {
-            lerp:            0.06,   // interpolation factor — lower = silkier
+            lerp:            0.07,   // interpolation factor — lower = silkier
             smoothWheel:     true,
             wheelMultiplier: 1,
             touchMultiplier: 2,
