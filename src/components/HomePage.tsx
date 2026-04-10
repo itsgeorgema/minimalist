@@ -11,10 +11,14 @@ export default function HomePage() {
   const [year, setYear] = useState<number | null>(null);
 
   // Refs for DOM elements
-  const milanSectionRef = useRef<HTMLDivElement>(null);
-  const milanTrackRef   = useRef<HTMLDivElement>(null);
-  const milanImageRef   = useRef<HTMLDivElement>(null);
-  const milanTextRef    = useRef<HTMLDivElement>(null);
+  const mainImageSectionRef = useRef<HTMLDivElement>(null);
+  const mainImageTrackRef   = useRef<HTMLDivElement>(null);
+  const mainImageRef        = useRef<HTMLDivElement>(null);
+  const mainImageTextRef    = useRef<HTMLDivElement>(null);
+
+  // Refs for projects horizontal scroll
+  const projectsTrackRef  = useRef<HTMLDivElement>(null);
+  const projectsRunnerRef = useRef<HTMLDivElement>(null);
 
   // Locomotive Scroll instance — shared with smoothScrollTo
   const locomotiveRef = useRef<any>(null);
@@ -169,10 +173,12 @@ export default function HomePage() {
        0.6+       text panel fades in           (power3.out)
   ------------------------------------------------------------------------- */
   useEffect(() => {
-    const imgWrap   = milanImageRef.current;
-    const textPanel = milanTextRef.current;
-    const trackEl   = milanTrackRef.current;
-    if (!imgWrap || !textPanel || !trackEl) return;
+    const imgWrap   = mainImageRef.current;
+    const textPanel = mainImageTextRef.current;
+    const trackEl   = mainImageTrackRef.current;
+    const runner    = projectsRunnerRef.current;
+    const projTrack = projectsTrackRef.current;
+    if (!imgWrap || !textPanel || !trackEl || !runner || !projTrack) return;
 
     let mounted    = true;
     let locoScroll: any = null;
@@ -187,40 +193,59 @@ export default function HomePage() {
         check();
       });
 
-    // ── GSAP timeline ──────────────────────────────────────────────────────
+    // ── Image GSAP timeline ────────────────────────────────────────────────
     const tl = gsap.timeline({ paused: true });
 
     gsap.set(imgWrap,   { width: "100%", marginLeft: "0%" });
     gsap.set(textPanel, { opacity: 0, x: 0, visibility: "hidden" });
 
-    // Width compresses then image slides to the left
-    tl.to(imgWrap, { width: "48%", ease: "power2.in", duration: 0.7 }, 0);
-    tl.to(imgWrap, {
-      keyframes: [
-        { marginLeft: "26%", duration: 0.7, ease: "power2.in" }, // compress → centre
-        { marginLeft: "0%",  duration: 0.9, ease: "power3.out" }, // slide to left edge
-      ],
-    }, 0);
-    // Text panel drifts in during the slide phase
+    const resumeEntries = Array.from(
+      textPanel.querySelectorAll<HTMLElement>(".resume-entry")
+    );
+    if (resumeEntries.length) gsap.set(resumeEntries, { opacity: 0, y: 14 });
+
+    tl.to(imgWrap, { width: "48%", ease: "power2.inOut", duration: 1.0 }, 0);
+
     tl.fromTo(
       textPanel,
-      { opacity: 0, x: 80, visibility: "hidden" },
-      { opacity: 1, x: 0,  visibility: "visible", ease: "power3.out", duration: 0.35 },
-      0.6
+      { opacity: 0, x: 50, visibility: "hidden" },
+      { opacity: 1, x: 0,  visibility: "visible", ease: "power3.out", duration: 0.15 },
+      0.75
     );
-    tl.to({}, { duration: 0.05 });
+    resumeEntries.forEach((entry, i) => {
+      tl.fromTo(
+        entry,
+        { opacity: 0, y: 14 },
+        { opacity: 1, y: 0,  ease: "power2.out", duration: 0.32 },
+        0.82 + i * 0.1
+      );
+    });
+
+    // ── Projects GSAP timeline ─────────────────────────────────────────────
+    const projTl = gsap.timeline({ paused: true });
+    gsap.set(runner, { x: 0 });
 
     // ── Track bounds ───────────────────────────────────────────────────────
-    // trackDocTop    = document Y where the sticky section starts
-    // trackScrollDist = how many pixels of scroll covers progress 0 → 1
-    //                  = trackHeight (300vh) − stickyHeight (100vh) = 200vh
-    let trackDocTop     = 0;
-    let trackScrollDist = 1;
+    let trackDocTop      = 0;
+    let trackScrollDist  = 1;
+    let projTrackDocTop  = 0;
+    let projScrollDist   = 1;
 
     const computeBounds = () => {
       const rect      = trackEl.getBoundingClientRect();
       trackDocTop     = rect.top + window.scrollY;
       trackScrollDist = Math.max(1, trackEl.offsetHeight - window.innerHeight);
+
+      const prect     = projTrack.getBoundingClientRect();
+      projTrackDocTop = prect.top + window.scrollY;
+      projScrollDist  = Math.max(1, projTrack.offsetHeight - window.innerHeight);
+
+      // Rebuild projects tl so endX reflects current layout
+      projTl.clear();
+      const endX = -(runner.scrollWidth - window.innerWidth);
+      if (endX < 0) {
+        projTl.to(runner, { x: endX, ease: "none", duration: 1 });
+      }
     };
 
     waitForIntro().then(() => {
@@ -228,36 +253,34 @@ export default function HomePage() {
 
       computeBounds();
       tl.progress(0);
+      projTl.progress(0);
 
-      // Dynamic import keeps this library out of the SSR bundle
       import("locomotive-scroll").then(({ default: LocomotiveScroll }) => {
         if (!mounted) return;
 
         locoScroll = new LocomotiveScroll({
-          // ── Lenis smooth-scroll options ──────────────────────────────────
           lenisOptions: {
-            lerp:            0.07,   // interpolation factor — lower = silkier
+            lerp:            0.07,
             smoothWheel:     true,
             wheelMultiplier: 1,
             touchMultiplier: 2,
           },
-          // ── Drive the GSAP timeline from scroll position ─────────────────
-          // `args.scroll` is the Lenis scroll Y (a plain number).
           scrollCallback: (args: any) => {
             const scrollY = typeof args.scroll === "number"
               ? args.scroll
               : window.scrollY;
-            const p = gsap.utils.clamp(
-              0, 1,
-              (scrollY - trackDocTop) / trackScrollDist,
-            );
-            tl.progress(p);
+
+            // Image animation
+            const p1 = gsap.utils.clamp(0, 1, (scrollY - trackDocTop) / trackScrollDist);
+            tl.progress(p1);
+
+            // Projects horizontal scroll
+            const p2 = gsap.utils.clamp(0, 1, (scrollY - projTrackDocTop) / projScrollDist);
+            projTl.progress(p2);
           },
         });
 
         locomotiveRef.current = locoScroll;
-
-        // Recompute bounds on resize so the progress mapping stays accurate
         window.addEventListener("resize", computeBounds, { passive: true });
       });
     });
@@ -265,6 +288,7 @@ export default function HomePage() {
     return () => {
       mounted = false;
       tl.kill();
+      projTl.kill();
       locoScroll?.destroy();
       locomotiveRef.current = null;
       window.removeEventListener("resize", computeBounds);
@@ -328,7 +352,7 @@ export default function HomePage() {
         </header>
 
         <main id="content">
-          <section className="page-wrapper layout-0" id="homepage" ref={milanSectionRef}>
+          <section className="page-wrapper layout-0" id="homepage" ref={mainImageSectionRef}>
             <div className="scroll-wrapper">
               <div className="container">
 
@@ -341,10 +365,10 @@ export default function HomePage() {
                     Locomotive Scroll maps the 200vh scroll budget to the
                     GSAP timeline, so the image animates while this section
                     is pinned in view. ──────────────────────────────────── */}
-                <div className="animation-scroll-track" ref={milanTrackRef}>
+                <div className="animation-scroll-track" ref={mainImageTrackRef}>
                   <div className="animation-sticky-frame">
 
-                    <div className="grid__animation-wrapper" ref={milanImageRef}>
+                    <div className="grid__animation-wrapper" ref={mainImageRef}>
                       <div className="grid grid--layout-0" data-name="Compartment Chair">
                         <a
                           href="#"
@@ -372,12 +396,119 @@ export default function HomePage() {
                       </div>
                     </div>
 
-                    <div className="milan-text-panel" ref={milanTextRef}>
-                      {/* Placeholder — add your text content here */}
+                    <div className="main-image-text-panel" ref={mainImageTextRef}>
+                      <div className="resume-panel">
+                        <div className="resume-panel__header">
+                          <span className="resume-panel__label">Background</span>
+                        </div>
+                        <div className="resume-entries">
+
+                          <div className="resume-entry">
+                            <span className="resume-entry__num">01</span>
+                            <div className="resume-entry__content">
+                              <p className="resume-entry__role">Software Engineer Co-op</p>
+                              <p className="resume-entry__meta"><span className="resume-entry__company">IBM</span><span className="resume-entry__period">Feb 2026 — Present</span></p>
+                              <p className="resume-entry__tag">Automation and AI: Infrastructure for Project Bob</p>
+                            </div>
+                          </div>
+
+                          <div className="resume-entry">
+                            <span className="resume-entry__num">02</span>
+                            <div className="resume-entry__content">
+                              <p className="resume-entry__role">Software Engineer Intern</p>
+                              <p className="resume-entry__meta"><span className="resume-entry__company">Praxie AI</span><span className="resume-entry__period">Apr 2025 — Feb 2026</span></p>
+                              <p className="resume-entry__tag">Mobile and Backend Infrastructure with GCP and React Native</p>
+                            </div>
+                          </div>
+
+                          <div className="resume-entry">
+                            <span className="resume-entry__num">03</span>
+                            <div className="resume-entry__content">
+                              <p className="resume-entry__role">Lead Full-Stack Engineer</p>
+                              <p className="resume-entry__meta"><span className="resume-entry__company">Alpha Kappa Psi @ UCSD</span><span className="resume-entry__period">Dec 2024 — Jan 2026</span></p>
+                              <p className="resume-entry__tag">Full-Stack Development with Next.js and Supabase</p>
+                            </div>
+                          </div>
+
+                          <div className="resume-entry">
+                            <span className="resume-entry__num">04</span>
+                            <div className="resume-entry__content">
+                              <p className="resume-entry__role">B.S. Computer Science</p>
+                              <p className="resume-entry__meta"><span className="resume-entry__company">UC San Diego</span><span className="resume-entry__period">Sep 2024 — Present</span></p>
+                            </div>
+                          </div>
+
+                        </div>
+                      </div>
                     </div>
 
                   </div>
                 </div>
+
+              {/* ── Featured Projects — horizontal scroll ─────────────────────────
+                  .projects-scroll-track is 450vh tall.
+                  .projects-sticky-frame is 100vh sticky at top:0.
+                  The GSAP projTl translates .projects-runner left as scroll
+                  progresses, sliding the title off-left and revealing cards. ── */}
+              <div className="projects-scroll-track" ref={projectsTrackRef}>
+                <div className="projects-sticky-frame">
+                  <div className="projects-runner" ref={projectsRunnerRef}>
+
+                    <div className="projects-title-panel">
+                      <h2 className="projects-heading">
+                        <span>Featured</span>
+                        <span>Projects</span>
+                      </h2>
+                    </div>
+
+                    <div className="project-card">
+                      <span className="project-card__num">01</span>
+                      <h3 className="project-card__title">Project Bob</h3>
+                      <p className="project-card__meta">IBM · Feb 2026 — Present</p>
+                      <p className="project-card__desc">
+                        Automation and AI infrastructure for enterprise deployment pipelines, supporting large-scale agentic workflows.
+                      </p>
+                      <div className="project-card__tags">
+                        <span className="project-card__tag">Python</span>
+                        <span className="project-card__tag">AWS</span>
+                        <span className="project-card__tag">AI Agents</span>
+                        <span className="project-card__tag">Infrastructure</span>
+                      </div>
+                    </div>
+
+                    <div className="project-card">
+                      <span className="project-card__num">02</span>
+                      <h3 className="project-card__title">Praxie Platform</h3>
+                      <p className="project-card__meta">Praxie AI · Apr 2025 — Feb 2026</p>
+                      <p className="project-card__desc">
+                        Mobile and backend infrastructure for an AI-powered business process platform built on GCP and React Native.
+                      </p>
+                      <div className="project-card__tags">
+                        <span className="project-card__tag">React Native</span>
+                        <span className="project-card__tag">GCP</span>
+                        <span className="project-card__tag">Node.js</span>
+                        <span className="project-card__tag">Mobile</span>
+                      </div>
+                    </div>
+
+                    <div className="project-card">
+                      <span className="project-card__num">03</span>
+                      <h3 className="project-card__title">AKPsi Platform</h3>
+                      <p className="project-card__meta">Alpha Kappa Psi @ UCSD · Dec 2024 — Jan 2026</p>
+                      <p className="project-card__desc">
+                        Full-stack web platform for fraternity operations — member management, event coordination, and internal tooling.
+                      </p>
+                      <div className="project-card__tags">
+                        <span className="project-card__tag">Next.js</span>
+                        <span className="project-card__tag">Supabase</span>
+                        <span className="project-card__tag">TypeScript</span>
+                        <span className="project-card__tag">Full-Stack</span>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
 
                 <h2 className="title title--bottom">George</h2>
               </div>
