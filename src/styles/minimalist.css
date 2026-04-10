@@ -69,6 +69,7 @@ html {
   background-color: #edeae4;
   font-size: 62.5%;
   height: 100%;
+  overflow-x: hidden;
   overscroll-behavior: none;
 }
 
@@ -657,18 +658,31 @@ body:not(.intro-active) #homepage .hero-featured-img {
 }
 
 /* --------------------------------------------------------------------------
-   Milan scroll animation — sticky track + text panel
+   Milan scroll animation — CSS sticky track + Locomotive Scroll progress
    -------------------------------------------------------------------------- */
+
+/* Track is tall enough to give ~200vh of animation budget beyond the image's
+   natural height.  The JS computes the exact distance dynamically. */
 .animation-scroll-track {
+  height: 450vh;
   position: relative;
 }
 
+/* During the intro zoom the full track height would show as a huge blank space
+   in the scaled-down view — collapse it to content height until intro ends. */
+body.intro-active .animation-scroll-track {
+  height: auto;
+}
+
+/* Sticky frame pins the image in-view while the invisible track scrolls past.
+   No height or overflow constraints — the image keeps its natural 125% ratio. */
 .animation-sticky-frame {
-  position: relative;
+  position: sticky;
+  top: 0;
 }
 
-#homepage .grid__animation-wrapper {
-  will-change: clip-path, transform;
+.animation-sticky-frame .grid__animation-wrapper {
+  will-change: width, margin-left;
 }
 
 .milan-text-panel {
