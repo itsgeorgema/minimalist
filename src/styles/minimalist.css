@@ -976,24 +976,30 @@ body.intro-active .animation-scroll-track {
 }
 
 /* --------------------------------------------------------------------------
-   Featured Projects — horizontal scroll section
+   Featured / Projects — title animation (horizontal scroll) + cards below
    -------------------------------------------------------------------------- */
+
+/* Sticky track — gives ~150vh of scroll budget for the word-slide animation */
 .projects-scroll-track {
-  height: 450vh;
+  height: 250vh;
   position: relative;
 }
 
-body.intro-active .projects-scroll-track {
+body.intro-active .projects-scroll-track,
+body.intro-active .projects-cards-section {
   display: none;
 }
 
 .projects-sticky-frame {
   height: 100vh;
+  margin-left: calc((100% - 100vw) / 2);
   overflow: hidden;
   position: sticky;
   top: 0;
+  width: 100vw;
 }
 
+/* Runner holds two 100vw word panels; GSAP translates it -100vw */
 .projects-runner {
   display: flex;
   flex-direction: row;
@@ -1001,46 +1007,52 @@ body.intro-active .projects-scroll-track {
   will-change: transform;
 }
 
-/* Title panel — same vertical layout as the main container */
-.projects-title-panel {
+/* Word panel sizes to its text content so runner.scrollWidth = text + padding.
+   padding-right is the right-side slack that remains visible at animation end. */
+.projects-word-panel {
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
   height: 100%;
   justify-content: flex-end;
-  padding: 6.6vw 20px 12vw;
-  width: 100vw;
+  padding: 6.6vw 0 20px 20px;
+  width: max-content;
 }
 
-.projects-heading {
-  display: flex;
-  flex-direction: column;
-  font-size: clamp(1px, 20vw, 280px);
+.projects-runner-slack {
+  display: none;
+}
+
+.projects-word {
+  display: block;
+  font-size: clamp(1px, 38.89vw, 600px);
   font-weight: 700;
   letter-spacing: -0.09em;
   line-height: 0.8;
   text-transform: uppercase;
-  transform: scaleX(0.97);
-  transform-origin: left center;
 }
 
-/* Project cards */
-.project-card {
-  border-left: 1px solid rgba(40, 40, 42, 0.15);
+/* Project cards — normal vertical scroll, below the sticky section */
+.projects-cards-section {
   display: flex;
   flex-direction: column;
-  flex-shrink: 0;
-  height: 100%;
-  justify-content: center;
-  padding: 0 4vw 0 5vw;
-  width: 58vw;
+}
+
+.project-card {
+  border-bottom: 1px solid rgba(40, 40, 42, 0.12);
+  display: flex;
+  flex-direction: column;
+}
+
+.project-card:first-child {
+  border-top: 1px solid rgba(40, 40, 42, 0.12);
 }
 
 .project-card__num {
   font-size: 1.4rem;
   font-weight: 400;
   letter-spacing: 0.04em;
-  margin-bottom: 2.5vh;
+  margin-bottom: 6px;
   opacity: 0.45;
 }
 
@@ -1049,7 +1061,7 @@ body.intro-active .projects-scroll-track {
   font-weight: 700;
   letter-spacing: -0.04em;
   line-height: 0.9;
-  margin-bottom: 2.5vh;
+  margin-bottom: 10px;
   text-transform: uppercase;
 }
 
@@ -1057,7 +1069,7 @@ body.intro-active .projects-scroll-track {
   font-size: 1.4rem;
   font-weight: 400;
   letter-spacing: -0.01em;
-  margin-bottom: 2.5vh;
+  margin-bottom: 10px;
   opacity: 0.55;
 }
 
@@ -1066,8 +1078,8 @@ body.intro-active .projects-scroll-track {
   font-weight: 400;
   letter-spacing: -0.02em;
   line-height: 1.45;
-  margin-bottom: 3vh;
-  max-width: 38ch;
+  margin-bottom: 12px;
+  max-width: 52ch;
 }
 
 .project-card__tags {
@@ -1086,35 +1098,15 @@ body.intro-active .projects-scroll-track {
 }
 
 @media (max-width: 960px) {
-  .projects-scroll-track {
-    height: auto;
-  }
-
-  .projects-sticky-frame {
-    height: auto;
-    overflow: visible;
-    position: relative;
-  }
-
-  .projects-runner {
-    flex-direction: column;
-  }
-
-  .projects-title-panel {
-    height: auto;
+  .projects-word-panel {
     padding: 60px 10px 40px;
-    width: 100%;
   }
 
-  .projects-heading {
+  .projects-word {
     font-size: clamp(1px, 14vw, 200px);
   }
 
   .project-card {
-    border-left: none;
-    border-top: 1px solid rgba(40, 40, 42, 0.15);
-    height: auto;
-    padding: 30px 10px;
-    width: 100%;
+    padding: 16px 10px;
   }
 }

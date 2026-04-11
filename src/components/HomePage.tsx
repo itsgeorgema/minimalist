@@ -236,16 +236,21 @@ export default function HomePage() {
       trackDocTop     = rect.top + window.scrollY;
       trackScrollDist = Math.max(1, trackEl.offsetHeight - window.innerHeight);
 
+      // Slide until the word's right edge clears the viewport, plus one extra
+      // character-width of overshoot so the last letter bleeds off naturally.
+      gsap.set(runner, { x: 0 });
+      const wordEl = runner.querySelector<HTMLElement>(".projects-word");
+      const charCount = wordEl?.textContent?.trim().length || 1;
+      const charWidth = runner.scrollWidth / charCount;
+      const scrollBudget = Math.max(0, runner.scrollWidth - window.innerWidth + charWidth * 0.3);
+      projTrack.style.height = `${window.innerHeight + scrollBudget}px`;
+
       const prect     = projTrack.getBoundingClientRect();
       projTrackDocTop = prect.top + window.scrollY;
-      projScrollDist  = Math.max(1, projTrack.offsetHeight - window.innerHeight);
+      projScrollDist  = Math.max(1, scrollBudget);
 
-      // Rebuild projects tl so endX reflects current layout
       projTl.clear();
-      const endX = -(runner.scrollWidth - window.innerWidth);
-      if (endX < 0) {
-        projTl.to(runner, { x: endX, ease: "none", duration: 1 });
-      }
+      projTl.to(runner, { x: -scrollBudget, ease: "none", duration: 1 });
     };
 
     waitForIntro().then(() => {
@@ -450,64 +455,69 @@ export default function HomePage() {
                   .projects-sticky-frame is 100vh sticky at top:0.
                   The GSAP projTl translates .projects-runner left as scroll
                   progresses, sliding the title off-left and revealing cards. ── */}
+              {/* ── Featured / Projects title animation — horizontal scroll ─────────
+                  Runner contains two 100vw word panels: "Featured" then "Projects".
+                  GSAP translates the runner left by 100vw over the scroll budget,
+                  shifting "Featured" off-left and revealing "Projects". ───────── */}
               <div className="projects-scroll-track" ref={projectsTrackRef}>
                 <div className="projects-sticky-frame">
                   <div className="projects-runner" ref={projectsRunnerRef}>
-
-                    <div className="projects-title-panel">
-                      <h2 className="projects-heading">
-                        <span>Featured</span>
-                        <span>Projects</span>
-                      </h2>
+                    <div className="projects-word-panel">
+                      <span className="projects-word">Projects</span>
                     </div>
-
-                    <div className="project-card">
-                      <span className="project-card__num">01</span>
-                      <h3 className="project-card__title">Project Bob</h3>
-                      <p className="project-card__meta">IBM · Feb 2026 — Present</p>
-                      <p className="project-card__desc">
-                        Automation and AI infrastructure for enterprise deployment pipelines, supporting large-scale agentic workflows.
-                      </p>
-                      <div className="project-card__tags">
-                        <span className="project-card__tag">Python</span>
-                        <span className="project-card__tag">AWS</span>
-                        <span className="project-card__tag">AI Agents</span>
-                        <span className="project-card__tag">Infrastructure</span>
-                      </div>
-                    </div>
-
-                    <div className="project-card">
-                      <span className="project-card__num">02</span>
-                      <h3 className="project-card__title">Praxie Platform</h3>
-                      <p className="project-card__meta">Praxie AI · Apr 2025 — Feb 2026</p>
-                      <p className="project-card__desc">
-                        Mobile and backend infrastructure for an AI-powered business process platform built on GCP and React Native.
-                      </p>
-                      <div className="project-card__tags">
-                        <span className="project-card__tag">React Native</span>
-                        <span className="project-card__tag">GCP</span>
-                        <span className="project-card__tag">Node.js</span>
-                        <span className="project-card__tag">Mobile</span>
-                      </div>
-                    </div>
-
-                    <div className="project-card">
-                      <span className="project-card__num">03</span>
-                      <h3 className="project-card__title">AKPsi Platform</h3>
-                      <p className="project-card__meta">Alpha Kappa Psi @ UCSD · Dec 2024 — Jan 2026</p>
-                      <p className="project-card__desc">
-                        Full-stack web platform for fraternity operations — member management, event coordination, and internal tooling.
-                      </p>
-                      <div className="project-card__tags">
-                        <span className="project-card__tag">Next.js</span>
-                        <span className="project-card__tag">Supabase</span>
-                        <span className="project-card__tag">TypeScript</span>
-                        <span className="project-card__tag">Full-Stack</span>
-                      </div>
-                    </div>
-
+                    <div className="projects-runner-slack" aria-hidden="true" />
                   </div>
                 </div>
+              </div>
+
+              {/* ── Project cards — normal vertical scroll ──────────────────────── */}
+              <div className="projects-cards-section">
+
+                <div className="project-card">
+                  <span className="project-card__num">01</span>
+                  <h3 className="project-card__title">Project Bob</h3>
+                  <p className="project-card__meta">IBM · Feb 2026 — Present</p>
+                  <p className="project-card__desc">
+                    Automation and AI infrastructure for enterprise deployment pipelines, supporting large-scale agentic workflows.
+                  </p>
+                  <div className="project-card__tags">
+                    <span className="project-card__tag">Python</span>
+                    <span className="project-card__tag">AWS</span>
+                    <span className="project-card__tag">AI Agents</span>
+                    <span className="project-card__tag">Infrastructure</span>
+                  </div>
+                </div>
+
+                <div className="project-card">
+                  <span className="project-card__num">02</span>
+                  <h3 className="project-card__title">Praxie Platform</h3>
+                  <p className="project-card__meta">Praxie AI · Apr 2025 — Feb 2026</p>
+                  <p className="project-card__desc">
+                    Mobile and backend infrastructure for an AI-powered business process platform built on GCP and React Native.
+                  </p>
+                  <div className="project-card__tags">
+                    <span className="project-card__tag">React Native</span>
+                    <span className="project-card__tag">GCP</span>
+                    <span className="project-card__tag">Node.js</span>
+                    <span className="project-card__tag">Mobile</span>
+                  </div>
+                </div>
+
+                <div className="project-card">
+                  <span className="project-card__num">03</span>
+                  <h3 className="project-card__title">AKPsi Platform</h3>
+                  <p className="project-card__meta">Alpha Kappa Psi @ UCSD · Dec 2024 — Jan 2026</p>
+                  <p className="project-card__desc">
+                    Full-stack web platform for fraternity operations — member management, event coordination, and internal tooling.
+                  </p>
+                  <div className="project-card__tags">
+                    <span className="project-card__tag">Next.js</span>
+                    <span className="project-card__tag">Supabase</span>
+                    <span className="project-card__tag">TypeScript</span>
+                    <span className="project-card__tag">Full-Stack</span>
+                  </div>
+                </div>
+
               </div>
 
                 <h2 className="title title--bottom">George</h2>
