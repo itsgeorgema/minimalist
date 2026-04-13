@@ -3,11 +3,15 @@ import type { ReactNode } from "react";
 import "./globals.css";
 import ElasticCursor from "@/components/animations/elasticCursor";
 import CanvasBackground from "@/components/animations/CanvasBackground";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: "George Ma",
   description:
     "George Ma's Portfolio",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
@@ -29,6 +33,7 @@ export default function RootLayout({
         <CanvasBackground />
         {children}
         <ElasticCursor />
+        <Analytics />
       </body>
     </html>
   );
