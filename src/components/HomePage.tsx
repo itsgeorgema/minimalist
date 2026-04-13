@@ -23,6 +23,10 @@ export default function HomePage() {
   // Locomotive Scroll instance — shared with smoothScrollTo
   const locomotiveRef = useRef<any>(null);
 
+  // Scroll targets exposed to nav handlers
+  const aboutScrollTargetRef    = useRef<number>(0);
+  const projectsScrollTargetRef = useRef<number>(0);
+
   // ── Smooth scroll helper ─────────────────────────────────────────────────
   // Used by header "Contact" / logo clicks.  Delegates to Locomotive Scroll
   // (→ Lenis) once available, with a GSAP fallback.
@@ -52,6 +56,16 @@ export default function HomePage() {
   const handleNameClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     smoothScrollTo(0);
+  };
+
+  const handleAboutClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    smoothScrollTo(aboutScrollTargetRef.current);
+  };
+
+  const handleProjectsClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    smoothScrollTo(projectsScrollTargetRef.current);
   };
 
   // ── Stable year ───────────────────────────────────────────────────────────
@@ -173,15 +187,16 @@ export default function HomePage() {
        0.6+       text panel fades in           (power3.out)
   ------------------------------------------------------------------------- */
   useEffect(() => {
-    const imgWrap   = mainImageRef.current;
-    const textPanel = mainImageTextRef.current;
-    const trackEl   = mainImageTrackRef.current;
-    const runner    = projectsRunnerRef.current;
-    const projTrack = projectsTrackRef.current;
+    const imgWrap    = mainImageRef.current;
+    const textPanel  = mainImageTextRef.current;
+    const trackEl    = mainImageTrackRef.current;
+    const runner     = projectsRunnerRef.current;
+    const projTrack  = projectsTrackRef.current;
     if (!imgWrap || !textPanel || !trackEl || !runner || !projTrack) return;
 
     let mounted    = true;
     let locoScroll: any = null;
+
 
     // Resolve when the intro animation has completed
     const waitForIntro = () =>
@@ -209,15 +224,15 @@ export default function HomePage() {
     tl.fromTo(
       textPanel,
       { opacity: 0, x: 50, visibility: "hidden" },
-      { opacity: 1, x: 0,  visibility: "visible", ease: "power3.out", duration: 0.15 },
-      0.75
+      { opacity: 1, x: 0,  visibility: "visible", ease: "power3.out", duration: 0.40 },
+      0.95
     );
     resumeEntries.forEach((entry, i) => {
       tl.fromTo(
         entry,
         { opacity: 0, y: 14 },
-        { opacity: 1, y: 0,  ease: "power2.out", duration: 0.32 },
-        0.82 + i * 0.1
+        { opacity: 1, y: 0,  ease: "power2.out", duration: 0.90 },
+        1.15 + i * 0.30
       );
     });
 
@@ -226,20 +241,18 @@ export default function HomePage() {
     gsap.set(runner, { x: 0 });
 
     // ── Track bounds ───────────────────────────────────────────────────────
-    let trackDocTop      = 0;
-    let trackScrollDist  = 1;
-    let projTrackDocTop  = 0;
-    let projScrollDist   = 1;
+    let trackDocTop     = 0;
+    let trackScrollDist = 1;
+    let projTrackDocTop = 0;
+    let projScrollDist  = 1;
 
     const computeBounds = () => {
       const rect      = trackEl.getBoundingClientRect();
       trackDocTop     = rect.top + window.scrollY;
       trackScrollDist = Math.max(1, trackEl.offsetHeight - window.innerHeight);
 
-      // Slide until the word's right edge clears the viewport, plus one extra
-      // character-width of overshoot so the last letter bleeds off naturally.
       gsap.set(runner, { x: 0 });
-      const wordEl = runner.querySelector<HTMLElement>(".projects-word");
+      const wordEl    = runner.querySelector<HTMLElement>(".projects-word");
       const charCount = wordEl?.textContent?.trim().length || 1;
       const charWidth = runner.scrollWidth / charCount;
       const scrollBudget = Math.max(0, runner.scrollWidth - window.innerWidth + charWidth * 0.3);
@@ -248,6 +261,10 @@ export default function HomePage() {
       const prect     = projTrack.getBoundingClientRect();
       projTrackDocTop = prect.top + window.scrollY;
       projScrollDist  = Math.max(1, scrollBudget);
+
+      // Expose snap targets to nav handlers
+      aboutScrollTargetRef.current    = trackDocTop + trackScrollDist;
+      projectsScrollTargetRef.current = projTrackDocTop;
 
       projTl.clear();
       projTl.to(runner, { x: -scrollBudget, ease: "none", duration: 1 });
@@ -259,6 +276,7 @@ export default function HomePage() {
       computeBounds();
       tl.progress(0);
       projTl.progress(0);
+
 
       import("locomotive-scroll").then(({ default: LocomotiveScroll }) => {
         if (!mounted) return;
@@ -333,9 +351,9 @@ export default function HomePage() {
             </h2>
           </div>
           <nav className="header-nav site-header__center" aria-label="Primary">
-            <a href="#" className="cursor-can-hover">ABOUT</a>
+            <a href="#section-background" className="cursor-can-hover" onClick={handleAboutClick}>ABOUT</a>
             <a>&nbsp;&nbsp;</a>
-            <a href="#" className="cursor-can-hover">PROJECTS</a>
+            <a href="#section-projects" className="cursor-can-hover" onClick={handleProjectsClick}>PROJECTS</a>
             <a>&nbsp;&nbsp;</a>
             <a href="https://github.com/itsgeorgema" target="_blank" className="cursor-can-hover">GITHUB</a>
             <a>&nbsp;&nbsp;</a>
@@ -362,7 +380,6 @@ export default function HomePage() {
               <div className="container">
 
                 <h2 className="title">George</h2>
-                <p className="credit-link">Photographed in Milan, Italy</p>
 
                 {/* ── Sticky animation section ─────────────────────────────
                     .animation-scroll-track  is 300vh tall.
@@ -371,6 +388,8 @@ export default function HomePage() {
                     GSAP timeline, so the image animates while this section
                     is pinned in view. ──────────────────────────────────── */}
                 <div className="animation-scroll-track" ref={mainImageTrackRef}>
+                  {/* Aligns with scroll Y where hero/background scrub reaches p=1 (same as trackScrollDist) */}
+                  <span className="hero-scrub-end-anchor" id="section-background" aria-hidden="true" />
                   <div className="animation-sticky-frame">
 
                     <div className="grid__animation-wrapper" ref={mainImageRef}>
@@ -459,7 +478,7 @@ export default function HomePage() {
                   Runner contains two 100vw word panels: "Featured" then "Projects".
                   GSAP translates the runner left by 100vw over the scroll budget,
                   shifting "Featured" off-left and revealing "Projects". ───────── */}
-              <div className="projects-scroll-track" ref={projectsTrackRef}>
+              <div className="projects-scroll-track" ref={projectsTrackRef} id="section-projects">
                 <div className="projects-sticky-frame">
                   <div className="projects-runner" ref={projectsRunnerRef}>
                     <div className="projects-word-panel">
@@ -470,55 +489,133 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* ── Project cards — normal vertical scroll ──────────────────────── */}
-              <div className="projects-cards-section">
+              {/* ── Featured Projects — 4-col sticky grid ────────────────────────────── */}
+              {/*  Flat row-major layout: cells are direct grid children so CSS    */}
+              {/*  Grid controls all row heights uniformly. Spotify sticks at top. */}
+              <div className="exp-sticky-section">
 
-                <div className="project-card">
-                  <span className="project-card__num">01</span>
-                  <h3 className="project-card__title">Project Bob</h3>
-                  <p className="project-card__meta">IBM · Feb 2026 — Present</p>
-                  <p className="project-card__desc">
-                    Automation and AI infrastructure for enterprise deployment pipelines, supporting large-scale agentic workflows.
-                  </p>
-                  <div className="project-card__tags">
-                    <span className="project-card__tag">Python</span>
-                    <span className="project-card__tag">AWS</span>
-                    <span className="project-card__tag">AI Agents</span>
-                    <span className="project-card__tag">Infrastructure</span>
+                {/* Grid A — rows 1-2: Pokemon Generator sticks here */}
+                <div className="exp-sticky-grid">
+
+                  {/* Row 1 */}
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
+                  <div className="exp-sticky-card exp-sticky-card--pinned">
+                    <span className="exp-sticky-card__num">01</span>
+                    <div className="exp-sticky-card__body">
+                      <p className="exp-sticky-card__name">Pokemon Generator</p>
+                      <p className="exp-sticky-card__category">Deep Learning</p>
+                      <p className="exp-sticky-card__desc">Generates original Pokemon images and stats via a Conditional GAN.</p>
+                      <p className="exp-sticky-card__stack">Python · PyTorch · CUDA · Flask · Docker</p>
+                      <div className="exp-sticky-card__links">
+                        <a href="https://original-pokemon-generator-project.fly.dev/" target="_blank" className="cursor-can-hover">↗ Live</a>
+                        <a href="https://github.com/itsgeorgema/Pokemon-Generator" target="_blank" className="cursor-can-hover">GitHub</a>
+                        <a href="https://www.youtube.com/watch?v=SFcy8QjVgsY" target="_blank" className="cursor-can-hover">Demo</a>
+                      </div>
+                    </div>
                   </div>
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
+
+                  {/* Row 2 */}
+                  <div className="exp-sticky-card">
+                    <span className="exp-sticky-card__num">02</span>
+                    <div className="exp-sticky-card__body">
+                      <p className="exp-sticky-card__name">Spotify Mood Player</p>
+                      <p className="exp-sticky-card__category">Full-Stack AI</p>
+                      <p className="exp-sticky-card__desc">AI categorizes and plays Spotify songs by mood.</p>
+                      <p className="exp-sticky-card__stack">TypeScript · React · Python · Flask · OpenAI · AWS</p>
+                      <div className="exp-sticky-card__links">
+                        <a href="https://spotify-mood-player.vercel.app/" target="_blank" className="cursor-can-hover">↗ Live</a>
+                        <a href="https://github.com/itsgeorgema/spotify-mood-player" target="_blank" className="cursor-can-hover">GitHub</a>
+                        <a href="https://www.youtube.com/watch?v=Iloqfjgzkps" target="_blank" className="cursor-can-hover">Demo</a>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
+                  <div className="exp-sticky-card">
+                    <span className="exp-sticky-card__num">03</span>
+                    <div className="exp-sticky-card__body">
+                      <p className="exp-sticky-card__name">Watchdog</p>
+                      <p className="exp-sticky-card__category">DevOps · AI</p>
+                      <p className="exp-sticky-card__desc">AI-powered CI/CD automation for PR reviews, linting, and security checks.</p>
+                      <p className="exp-sticky-card__stack">Python · FastAPI · Node.js · GitHub Actions · OpenAI · AWS</p>
+                      <div className="exp-sticky-card__links">
+                        <a href="https://github.com/itsgeorgema/watchdog" target="_blank" className="cursor-can-hover">↗ GitHub</a>
+                        <a href="https://www.youtube.com/watch?v=SPpE-DwsTb8" target="_blank" className="cursor-can-hover">Demo</a>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
 
-                <div className="project-card">
-                  <span className="project-card__num">02</span>
-                  <h3 className="project-card__title">Praxie Platform</h3>
-                  <p className="project-card__meta">Praxie AI · Apr 2025 — Feb 2026</p>
-                  <p className="project-card__desc">
-                    Mobile and backend infrastructure for an AI-powered business process platform built on GCP and React Native.
-                  </p>
-                  <div className="project-card__tags">
-                    <span className="project-card__tag">React Native</span>
-                    <span className="project-card__tag">GCP</span>
-                    <span className="project-card__tag">Node.js</span>
-                    <span className="project-card__tag">Mobile</span>
-                  </div>
-                </div>
+                {/* Grid B — rows 3-4: AKPsi sticks here, Pokemon Generator has exited */}
+                <div className="exp-sticky-grid exp-sticky-grid--no-top-border">
 
-                <div className="project-card">
-                  <span className="project-card__num">03</span>
-                  <h3 className="project-card__title">AKPsi Platform</h3>
-                  <p className="project-card__meta">Alpha Kappa Psi @ UCSD · Dec 2024 — Jan 2026</p>
-                  <p className="project-card__desc">
-                    Full-stack web platform for fraternity operations — member management, event coordination, and internal tooling.
-                  </p>
-                  <div className="project-card__tags">
-                    <span className="project-card__tag">Next.js</span>
-                    <span className="project-card__tag">Supabase</span>
-                    <span className="project-card__tag">TypeScript</span>
-                    <span className="project-card__tag">Full-Stack</span>
+                  {/* Row 3 */}
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
+                  <div className="exp-sticky-card exp-sticky-card--pinned">
+                    <span className="exp-sticky-card__num">04</span>
+                    <div className="exp-sticky-card__body">
+                      <p className="exp-sticky-card__name">UCSD AKPsi Website</p>
+                      <p className="exp-sticky-card__category">Full-Stack</p>
+                      <p className="exp-sticky-card__desc">Official chapter website for UCSD Alpha Kappa Psi.</p>
+                      <p className="exp-sticky-card__stack">Next.js · React · TypeScript · Supabase</p>
+                      <div className="exp-sticky-card__links">
+                        <a href="https://akpsiucsd.com/" target="_blank" className="cursor-can-hover">↗ Live</a>
+                        <a href="https://github.com/itsgeorgema/ucsd-akpsi-website" target="_blank" className="cursor-can-hover">GitHub</a>
+                      </div>
+                    </div>
                   </div>
+                  <div className="exp-sticky-card">
+                    <span className="exp-sticky-card__num">05</span>
+                    <div className="exp-sticky-card__body">
+                      <p className="exp-sticky-card__name">This Portfolio</p>
+                      <p className="exp-sticky-card__category">Portfolio</p>
+                      <p className="exp-sticky-card__desc">Built with Next.js, Three.js, Lenis, GSAP, and WebGL.</p>
+                      <p className="exp-sticky-card__stack">Next.js · React · Three.js · Lenis · GSAP · WebGL · TypeScript</p>
+                      <div className="exp-sticky-card__links">
+                        <a href="https://ggeorgema.com/" target="_blank" className="cursor-can-hover">↗ Live</a>
+                        <a href="https://github.com/itsgeorgema/minimalist" target="_blank" className="cursor-can-hover">GitHub</a>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
+
+                  {/* Row 4 */}
+                  <div className="exp-sticky-card">
+                    <span className="exp-sticky-card__num">06</span>
+                    <div className="exp-sticky-card__body">
+                      <p className="exp-sticky-card__name">Text-Based Adventure</p>
+                      <p className="exp-sticky-card__category">CLI Game</p>
+                      <p className="exp-sticky-card__desc">Museum heist adventure game inspired by Zork, playable via CLI.</p>
+                      <p className="exp-sticky-card__stack">Java</p>
+                      <div className="exp-sticky-card__links">
+                        <a href="https://github.com/itsgeorgema/text-based-adventure-game" target="_blank" className="cursor-can-hover">↗GitHub</a>
+                        <a href="https://www.youtube.com/watch?v=PNoRD2KLa6k" target="_blank" className="cursor-can-hover">Demo</a>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
+                  <div className="exp-sticky-card">
+                    <span className="exp-sticky-card__num">07</span>
+                    <div className="exp-sticky-card__body">
+                      <p className="exp-sticky-card__name">NBA Draft Hub</p>
+                      <p className="exp-sticky-card__category">Data Dashboard</p>
+                      <p className="exp-sticky-card__desc">Stats and data explorer for the 2025 NBA Draft class.</p>
+                      <p className="exp-sticky-card__stack">React · TypeScript · Vite · Tailwind</p>
+                      <div className="exp-sticky-card__links">
+                        <a href="https://nba-draft-hub-six.vercel.app/" target="_blank" className="cursor-can-hover">↗ Live</a>
+                        <a href="https://github.com/itsgeorgema/nba-draft-hub" target="_blank" className="cursor-can-hover">GitHub</a>
+                      </div>  
+                    </div>
+                  </div>
+
                 </div>
 
               </div>
+
 
                 <h2 className="title title--bottom">George</h2>
               </div>

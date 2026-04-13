@@ -668,6 +668,16 @@ body:not(.intro-active) #homepage .hero-featured-img {
   position: relative;
 }
 
+/* Nav “About” / #section-background: document Y matches trackDocTop + (trackHeight − 100vh) */
+.hero-scrub-end-anchor {
+  position: absolute;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  top: calc(100% - 100vh);
+  pointer-events: none;
+}
+
 /* During the intro zoom the full track height would show as a huge blank space
    in the scaled-down view — collapse it to content height until intro ends. */
 body.intro-active .animation-scroll-track {
@@ -986,7 +996,8 @@ body.intro-active .animation-scroll-track {
 }
 
 body.intro-active .projects-scroll-track,
-body.intro-active .projects-cards-section {
+body.intro-active .projects-cards-section,
+body.intro-active .exp-sticky-section {
   display: none;
 }
 
@@ -1110,3 +1121,121 @@ body.intro-active .projects-cards-section {
     padding: 16px 10px;
   }
 }
+
+/* --------------------------------------------------------------------------
+   Featured projects — 4-column CSS grid
+   -------------------------------------------------------------------------- */
+.exp-sticky-section {
+  margin: 0 20px;
+  position: relative;
+}
+
+.exp-sticky-grid {
+  border-top: 1px solid rgba(40, 40, 42, 0.12);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  /* Explicit row height = one column width, keeping every cell perfectly square */
+  grid-auto-rows: calc((100vw - 40px) / 4);
+}
+
+.exp-sticky-grid--no-top-border {
+  border-top: none;
+}
+
+/* Right border on every cell except col 4 (every 4th child) */
+.exp-sticky-card:not(:nth-child(4n)) {
+  border-right: 1px solid rgba(40, 40, 42, 0.12);
+}
+
+/* ── Project cards ───────────────────────────────────────────────────────── */
+.exp-sticky-card {
+  border-bottom: 1px solid rgba(40, 40, 42, 0.12);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(14px, 1.8vw, 28px);
+}
+
+.exp-sticky-card--blank {
+  /* empty square — holds its row height so grid stays aligned */
+}
+
+.exp-sticky-card:not(.exp-sticky-card--blank) {
+  background-color: #edeae4;
+}
+
+.exp-sticky-card--pinned {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+}
+
+/* AKPsi slide-in cell — outer card stays in place (preserving grid borders),
+   inner content slides horizontally via GSAP */
+
+@media (max-width: 960px) {
+  .exp-sticky-section { display: none; }
+}
+
+/* ── Project card content ────────────────────────────────────────────────── */
+
+.exp-sticky-card__num {
+  align-self: flex-end;
+  font-size: 1.1rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+
+.exp-sticky-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.exp-sticky-card__name {
+  font-size: clamp(13px, 1.9vw, 28px);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.exp-sticky-card__category {
+  font-size: clamp(9px, 1vw, 14px);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  margin-top: 4px;
+  text-transform: uppercase;
+}
+
+.exp-sticky-card__desc {
+  font-size: clamp(9px, 0.85vw, 12px);
+  font-weight: 300;
+  letter-spacing: 0.01em;
+  line-height: 1.4;
+  margin-top: 6px;
+}
+
+.exp-sticky-card__stack {
+  font-size: clamp(8px, 0.75vw, 11px);
+  font-weight: 300;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+
+.exp-sticky-card__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.exp-sticky-card__links a {
+  font-size: clamp(8px, 0.8vw, 11px);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
