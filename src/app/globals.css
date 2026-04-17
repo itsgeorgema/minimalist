@@ -28,3 +28,87 @@ div[style*="backdrop-filter: invert(100%)"] {
   pointer-events: none !important;
   z-index: 999999 !important;
 }
+
+body:has(.vercel-not-found) {
+  background: #000;
+}
+
+body:has(.vercel-not-found) canvas,
+body:has(.vercel-not-found) #jelly-id,
+body:has(.vercel-not-found) #cursor-dot {
+  display: none !important;
+}
+
+.vercel-not-found {
+  position: relative;
+  isolation: isolate;
+  z-index: 1;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  background: #000;
+  color: #fff;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.vercel-not-found::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: -1;
+}
+
+.vercel-not-found__content {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.vercel-not-found h1,
+.vercel-not-found p {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.vercel-not-found h1 {
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+.vercel-not-found__divider {
+  width: 1px;
+  height: 1.5rem;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.vercel-not-found__home {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.75rem;
+  text-decoration: none;
+}
+
+.vercel-not-found__home:hover {
+  color: #fff;
+}
+
+@media (max-width: 640px) {
+  .vercel-not-found,
+  .vercel-not-found__content {
+    flex-direction: column;
+  }
+
+  .vercel-not-found__divider {
+    width: 2rem;
+    height: 1px;
+  }
+}
