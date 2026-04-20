@@ -9,7 +9,6 @@ import React, {
 import { gsap } from "gsap";
 import { cn } from "@/lib/utils";
 import { useMouse } from "@/hooks/useMouse";
-import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { isTouchOrCoarse } from "@/components/util";
 
 // Gsap Ticker Function
@@ -69,11 +68,8 @@ const CURSOR_DIAMETER = 50;
 
 function ElasticCursor() {
   const isLoading = false; // Simplified since we removed the preloader context
-  const isMobile = useMediaQuery("(max-width: 768px)");
-  const [isTouch, setIsTouch] = useState(false);
-  useEffect(() => {
-    setIsTouch(isTouchOrCoarse());
-  }, []);
+  const [mounted, setMounted] = useState(false);
+  const [isDesktopCursor, setIsDesktopCursor] = useState(false);
 
   // React Refs for Jelly Blob and Text
   const jellyRef = useRef<HTMLDivElement>(null);
@@ -94,7 +90,7 @@ function ElasticCursor() {
 
   // Set GSAP quick setter Values on useLayoutEffect Update
   useLayoutEffect(() => {
-    if (isTouch) return;
+    if (!mounted || !isDesktopCursor || !jellyRef.current) return;
     // Ensure cursor is centered on pointer/target regardless of CSS transforms.
     // This fixes cases where the Tailwind translate(-50%, -50%) isn't preserved in GSAP's transform parsing.
     gsap.set(jellyRef.current, { xPercent: -50, yPercent: -50 });
@@ -104,7 +100,7 @@ function ElasticCursor() {
     set.sx = gsap.quickSetter(jellyRef.current, "scaleX");
     set.sy = gsap.quickSetter(jellyRef.current, "scaleY");
     set.width = gsap.quickSetter(jellyRef.current, "width", "px");
-  }, []);
+  }, [mounted, isDesktopCursor, set]);
 
   // Start Animation loop
   const loop = useCallback(() => {
@@ -131,9 +127,36 @@ function ElasticCursor() {
   }, [isLoading]); // Removed isHovering dependency, relying on ref + ticker
 
   const [cursorMoved, setCursorMoved] = useState(false);
+
+  useEffect(() => {
+    const hoverQuery = window.matchMedia("(hover: hover)");
+    const pointerQuery = window.matchMedia("(pointer: fine)");
+    const widthQuery = window.matchMedia("(min-width: 768px)");
+    const syncCursorMode = () => {
+      setIsDesktopCursor(
+        hoverQuery.matches &&
+          pointerQuery.matches &&
+          widthQuery.matches
+      );
+    };
+
+    setMounted(true);
+    syncCursorMode();
+
+    hoverQuery.addEventListener("change", syncCursorMode);
+    pointerQuery.addEventListener("change", syncCursorMode);
+    widthQuery.addEventListener("change", syncCursorMode);
+
+    return () => {
+      hoverQuery.removeEventListener("change", syncCursorMode);
+      pointerQuery.removeEventListener("change", syncCursorMode);
+      widthQuery.removeEventListener("change", syncCursorMode);
+    };
+  }, []);
+
   // Run on Mouse Move
   useLayoutEffect(() => {
-    if (isMobile || isTouch) return;
+    if (!mounted || !isDesktopCursor) return;
     // Caluclate Everything Function
     const resolveHoverTarget = (el: HTMLElement | null): HTMLElement | null => {
       if (!el) return null;
@@ -281,18 +304,18 @@ function ElasticCursor() {
       window.removeEventListener("scroll", onScrollOrResize, true);
       window.removeEventListener("resize", onScrollOrResize);
     };
-  }, [isLoading]); // Removed isHovering dependency to prevent re-attaching listener on every hover change. Logic uses refs now.
+  }, [isLoading, isDesktopCursor, mounted]); // Removed isHovering dependency to prevent re-attaching listener on every hover change. Logic uses refs now.
 
   useEffect(() => {
-    if (!jellyRef.current || isTouch) return;
+    if (!mounted || !isDesktopCursor || !jellyRef.current) return;
     // Initialize cursor to proper circular shape
     jellyRef.current.style.height = `${CURSOR_DIAMETER}px`;
     jellyRef.current.style.borderRadius = `${CURSOR_DIAMETER}px`;
     jellyRef.current.style.width = `${CURSOR_DIAMETER}px`;
-  }, []);
+  }, [mounted, isDesktopCursor]);
 
-  useTicker(loop, isLoading || !cursorMoved || isMobile || isTouch);
-  if (isMobile || isTouch) return null;
+  useTicker(loop, !mounted || !isDesktopCursor || isLoading || !cursorMoved);
+  if (!mounted || !isDesktopCursor) return null;
   // Return UI
   return (
     <>
@@ -307,6 +330,7 @@ function ElasticCursor() {
         style={{
           zIndex: 100,
           backdropFilter: "invert(100%)",
+          opacity: cursorMoved ? 1 : 0,
         }}
       ></div>
       <div
@@ -319,6 +343,7 @@ function ElasticCursor() {
           height: "14px",
           backdropFilter: "invert(100%)",
           transform: "translate(-50%, -50%)",
+          opacity: cursorMoved ? 1 : 0,
         }}
       ></div>
     </>

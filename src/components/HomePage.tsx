@@ -124,6 +124,12 @@ export default function HomePage() {
     };
     window.addEventListener("resize", onResize);
 
+    const blockScroll = (e: Event) => {
+      if (document.body.classList.contains("intro-active")) e.preventDefault();
+    };
+    window.addEventListener("wheel",      blockScroll, { passive: false });
+    window.addEventListener("touchmove",  blockScroll, { passive: false });
+
     const timeouts: number[] = [];
 
     function startAnimation() {
@@ -145,15 +151,40 @@ export default function HomePage() {
         document.body.classList.add("intro-ready");
       }, afterHeaderIn));
 
-      timeouts.push(window.setTimeout(() => {
-        document.body.classList.remove("intro-active");
-        document.body.classList.remove("intro-header-in");
-        document.body.classList.remove("intro-ready");
-        document.body.style.overflow = "";
-        if (!site) return;
-        site.style.removeProperty("--intro-scale");
-        site.style.removeProperty("--intro-translate-y");
-      }, afterHeaderIn + 1400));
+      const fadeDuration = 350; // ms for mobile bottom-title fade out
+
+      if (window.innerWidth <= 960) {
+        // Mobile Phase 1: fade out bottom title
+        timeouts.push(window.setTimeout(() => {
+          const bottomTitle = document.querySelector<HTMLElement>(".title--bottom");
+          if (bottomTitle) gsap.to(bottomTitle, { opacity: 0, duration: fadeDuration / 1000, ease: "power2.in" });
+        }, afterHeaderIn + 700));
+
+        // Mobile Phase 2: reveal content + fade title back in
+        timeouts.push(window.setTimeout(() => {
+          document.body.classList.remove("intro-active");
+          document.body.classList.remove("intro-header-in");
+          document.body.classList.remove("intro-ready");
+          document.body.style.overflow = "";
+          if (!site) return;
+          site.style.removeProperty("--intro-scale");
+          site.style.removeProperty("--intro-translate-y");
+
+          const bottomTitle = document.querySelector<HTMLElement>(".title--bottom");
+          if (bottomTitle) gsap.to(bottomTitle, { opacity: 1, duration: 0.5, ease: "power2.out", delay: 0.1 });
+        }, afterHeaderIn + 700 + fadeDuration));
+      } else {
+        // Desktop: original timing, no fade sequence
+        timeouts.push(window.setTimeout(() => {
+          document.body.classList.remove("intro-active");
+          document.body.classList.remove("intro-header-in");
+          document.body.classList.remove("intro-ready");
+          document.body.style.overflow = "";
+          if (!site) return;
+          site.style.removeProperty("--intro-scale");
+          site.style.removeProperty("--intro-translate-y");
+        }, afterHeaderIn + 1400));
+      }
     }
 
     const heroImg      = document.querySelector<HTMLImageElement>(".hero-featured-img");
@@ -165,8 +196,10 @@ export default function HomePage() {
 
     return () => {
       timeouts.forEach(clearTimeout);
-      window.removeEventListener("load",   applyIntroZoomFit);
-      window.removeEventListener("resize", onResize);
+      window.removeEventListener("load",    applyIntroZoomFit);
+      window.removeEventListener("resize",  onResize);
+      window.removeEventListener("wheel",   blockScroll);
+      window.removeEventListener("touchmove", blockScroll);
     };
   }, []);
 
@@ -197,6 +230,14 @@ export default function HomePage() {
     let mounted    = true;
     let locoScroll: any = null;
 
+    const isMobile = () => window.innerWidth <= 960;
+
+    // On mobile: everything is static — CSS handles layout, native scroll handles scrolling
+    if (isMobile()) {
+      gsap.set(imgWrap,   { clearProps: "all" });
+      gsap.set(textPanel, { clearProps: "all" });
+      return () => { mounted = false; };
+    }
 
     // Resolve when the intro animation has completed
     const waitForIntro = () =>
@@ -359,7 +400,7 @@ export default function HomePage() {
             <a>&nbsp;&nbsp;</a>
             <a href="https://www.linkedin.com/in/ggeorgema/" className="cursor-can-hover" target="_blank">LINKEDIN</a>
             <a>&nbsp;&nbsp;</a>
-            <a href="#site-footer" className="cursor-can-hover" onClick={handleContactClick}>CONTACT</a>
+            <a href="tel:+16615133350" className="cursor-can-hover">PHONE</a>
           </nav>
           <div className="site-header__right">
             <div className="header-info">
@@ -498,10 +539,23 @@ export default function HomePage() {
                 <div className="exp-sticky-grid">
 
                   {/* Row 1 */}
-                  <div className="exp-sticky-card exp-sticky-card--blank" />
+                  <div className="exp-sticky-card">
+                    <span className="exp-sticky-card__num">01</span>
+                    <div className="exp-sticky-card__body">
+                      <p className="exp-sticky-card__name">Spotify Mood Player</p>
+                      <p className="exp-sticky-card__category">Full-Stack AI</p>
+                      <p className="exp-sticky-card__desc">AI categorizes and plays Spotify songs by mood.</p>
+                      <p className="exp-sticky-card__stack">TypeScript · React · Python · Flask · OpenAI · AWS</p>
+                      <div className="exp-sticky-card__links">
+                        <a href="https://spotify-mood-player.vercel.app/" target="_blank" className="cursor-can-hover">↗ Live</a>
+                        <a href="https://github.com/itsgeorgema/spotify-mood-player" target="_blank" className="cursor-can-hover">GitHub</a>
+                        <a href="https://www.youtube.com/watch?v=Iloqfjgzkps" target="_blank" className="cursor-can-hover">Demo</a>
+                      </div>
+                    </div>
+                  </div>
                   <div className="exp-sticky-card exp-sticky-card--blank" />
                   <div className="exp-sticky-card exp-sticky-card--pinned">
-                    <span className="exp-sticky-card__num">01</span>
+                    <span className="exp-sticky-card__num">02</span>
                     <div className="exp-sticky-card__body">
                       <p className="exp-sticky-card__name">Pokemon Generator</p>
                       <p className="exp-sticky-card__category">Deep Learning</p>
@@ -517,20 +571,7 @@ export default function HomePage() {
                   <div className="exp-sticky-card exp-sticky-card--blank" />
 
                   {/* Row 2 */}
-                  <div className="exp-sticky-card">
-                    <span className="exp-sticky-card__num">02</span>
-                    <div className="exp-sticky-card__body">
-                      <p className="exp-sticky-card__name">Spotify Mood Player</p>
-                      <p className="exp-sticky-card__category">Full-Stack AI</p>
-                      <p className="exp-sticky-card__desc">AI categorizes and plays Spotify songs by mood.</p>
-                      <p className="exp-sticky-card__stack">TypeScript · React · Python · Flask · OpenAI · AWS</p>
-                      <div className="exp-sticky-card__links">
-                        <a href="https://spotify-mood-player.vercel.app/" target="_blank" className="cursor-can-hover">↗ Live</a>
-                        <a href="https://github.com/itsgeorgema/spotify-mood-player" target="_blank" className="cursor-can-hover">GitHub</a>
-                        <a href="https://www.youtube.com/watch?v=Iloqfjgzkps" target="_blank" className="cursor-can-hover">Demo</a>
-                      </div>
-                    </div>
-                  </div>
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
                   <div className="exp-sticky-card exp-sticky-card--blank" />
                   <div className="exp-sticky-card exp-sticky-card--blank" />
                   <div className="exp-sticky-card">
@@ -553,9 +594,21 @@ export default function HomePage() {
                 <div className="exp-sticky-grid exp-sticky-grid--no-top-border">
 
                   {/* Row 3 */}
-                  <div className="exp-sticky-card exp-sticky-card--blank" />
-                  <div className="exp-sticky-card exp-sticky-card--pinned">
+                  <div className="exp-sticky-card">
                     <span className="exp-sticky-card__num">04</span>
+                    <div className="exp-sticky-card__body">
+                      <p className="exp-sticky-card__name">Text-Based Adventure</p>
+                      <p className="exp-sticky-card__category">CLI Game</p>
+                      <p className="exp-sticky-card__desc">Museum heist adventure game inspired by Zork, playable via CLI.</p>
+                      <p className="exp-sticky-card__stack">Java</p>
+                      <div className="exp-sticky-card__links">
+                        <a href="https://github.com/itsgeorgema/text-based-adventure-game" target="_blank" className="cursor-can-hover">↗GitHub</a>
+                        <a href="https://www.youtube.com/watch?v=PNoRD2KLa6k" target="_blank" className="cursor-can-hover">Demo</a>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="exp-sticky-card exp-sticky-card--pinned">
+                    <span className="exp-sticky-card__num">05</span>
                     <div className="exp-sticky-card__body">
                       <p className="exp-sticky-card__name">UCSD AKPsi Website</p>
                       <p className="exp-sticky-card__category">Full-Stack</p>
@@ -568,7 +621,7 @@ export default function HomePage() {
                     </div>
                   </div>
                   <div className="exp-sticky-card">
-                    <span className="exp-sticky-card__num">05</span>
+                    <span className="exp-sticky-card__num">06</span>
                     <div className="exp-sticky-card__body">
                       <p className="exp-sticky-card__name">This Portfolio</p>
                       <p className="exp-sticky-card__category">Portfolio</p>
@@ -583,19 +636,7 @@ export default function HomePage() {
                   <div className="exp-sticky-card exp-sticky-card--blank" />
 
                   {/* Row 4 */}
-                  <div className="exp-sticky-card">
-                    <span className="exp-sticky-card__num">06</span>
-                    <div className="exp-sticky-card__body">
-                      <p className="exp-sticky-card__name">Text-Based Adventure</p>
-                      <p className="exp-sticky-card__category">CLI Game</p>
-                      <p className="exp-sticky-card__desc">Museum heist adventure game inspired by Zork, playable via CLI.</p>
-                      <p className="exp-sticky-card__stack">Java</p>
-                      <div className="exp-sticky-card__links">
-                        <a href="https://github.com/itsgeorgema/text-based-adventure-game" target="_blank" className="cursor-can-hover">↗GitHub</a>
-                        <a href="https://www.youtube.com/watch?v=PNoRD2KLa6k" target="_blank" className="cursor-can-hover">Demo</a>
-                      </div>
-                    </div>
-                  </div>
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
                   <div className="exp-sticky-card exp-sticky-card--blank" />
                   <div className="exp-sticky-card exp-sticky-card--blank" />
                   <div className="exp-sticky-card">

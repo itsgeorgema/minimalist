@@ -29,6 +29,13 @@ div[style*="backdrop-filter: invert(100%)"] {
   z-index: 999999 !important;
 }
 
+@media (max-width: 767px), (hover: none), (pointer: coarse) {
+  #jelly-id,
+  #cursor-dot {
+    display: none !important;
+  }
+}
+
 body:has(.vercel-not-found) {
   background: #000;
 }
