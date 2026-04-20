@@ -9,12 +9,15 @@ gsap.registerPlugin(ScrollToPlugin);
 
 export default function HomePage() {
   const [year, setYear] = useState<number | null>(null);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   // Refs for DOM elements
   const mainImageSectionRef = useRef<HTMLDivElement>(null);
   const mainImageTrackRef   = useRef<HTMLDivElement>(null);
   const mainImageRef        = useRef<HTMLDivElement>(null);
   const mainImageTextRef    = useRef<HTMLDivElement>(null);
+  const mobileHeroBridgeRef = useRef<HTMLDivElement>(null);
+  const mobileHeroButtonRef = useRef<HTMLButtonElement>(null);
 
   // Refs for projects horizontal scroll
   const projectsTrackRef  = useRef<HTMLDivElement>(null);
@@ -107,7 +110,7 @@ export default function HomePage() {
       const fullH = el.scrollHeight;
       const vh    = window.innerHeight;
       if (!fullH || !vh) return;
-      const pad     = 0.9;
+      const pad     = window.innerWidth <= 960 ? 0.78 : 0.9;
       let   scale   = Math.min(1, (vh * pad) / fullH);
       if (scale < 0.08) scale = 0.08;
       const scaledH = fullH * scale;
@@ -151,16 +154,43 @@ export default function HomePage() {
         document.body.classList.add("intro-ready");
       }, afterHeaderIn));
 
-      const fadeDuration = 350; // ms for mobile bottom-title fade out
+      const mobileTitleOutDuration = 650;
+      const mobileTitleOutDistance = 240;
+      const mobileScrollInDuration = 650;
+      const mobileFooterFadeLead = 260;
+      const mobileFooterFadeDuration = 220;
 
       if (window.innerWidth <= 960) {
-        // Mobile Phase 1: fade out bottom title
+        const bottomTitle  = document.querySelector<HTMLElement>(".title--bottom");
+        const siteFooter   = document.querySelector<HTMLElement>("#site-footer");
+        const bridgeButton = mobileHeroButtonRef.current;
+        if (bottomTitle) gsap.set(bottomTitle, { clearProps: "opacity,transform" });
+        if (siteFooter) gsap.set(siteFooter, { clearProps: "opacity" });
+        if (bridgeButton) gsap.set(bridgeButton, { yPercent: -115 });
+
+        // Mobile Phase 1a: fade footer out slightly before title slide
         timeouts.push(window.setTimeout(() => {
-          const bottomTitle = document.querySelector<HTMLElement>(".title--bottom");
-          if (bottomTitle) gsap.to(bottomTitle, { opacity: 0, duration: fadeDuration / 1000, ease: "power2.in" });
+          if (siteFooter) {
+            gsap.to(siteFooter, {
+              opacity: 0,
+              duration: mobileFooterFadeDuration / 1000,
+              ease: "power2.in",
+            });
+          }
+        }, afterHeaderIn + 700 - mobileFooterFadeLead));
+
+        // Mobile Phase 1b: slide bottom title down
+        timeouts.push(window.setTimeout(() => {
+          if (bottomTitle) {
+            gsap.to(bottomTitle, {
+              yPercent: mobileTitleOutDistance,
+              duration: mobileTitleOutDuration / 1000,
+              ease: "power3.inOut",
+            });
+          }
         }, afterHeaderIn + 700));
 
-        // Mobile Phase 2: reveal content + fade title back in
+        // Mobile Phase 2: reveal content + reset temporary intro state
         timeouts.push(window.setTimeout(() => {
           document.body.classList.remove("intro-active");
           document.body.classList.remove("intro-header-in");
@@ -171,8 +201,25 @@ export default function HomePage() {
           site.style.removeProperty("--intro-translate-y");
 
           const bottomTitle = document.querySelector<HTMLElement>(".title--bottom");
-          if (bottomTitle) gsap.to(bottomTitle, { opacity: 1, duration: 0.5, ease: "power2.out", delay: 0.1 });
-        }, afterHeaderIn + 700 + fadeDuration));
+          if (bottomTitle) {
+            gsap.delayedCall(0.05, () => {
+              gsap.set(bottomTitle, { clearProps: "transform,opacity" });
+            });
+          }
+          if (siteFooter) {
+            gsap.delayedCall(0.05, () => {
+              gsap.set(siteFooter, { clearProps: "opacity" });
+            });
+          }
+          if (bridgeButton) {
+            gsap.to(bridgeButton, {
+              yPercent: 0,
+              duration: mobileScrollInDuration / 1000,
+              ease: "power3.out",
+              clearProps: "transform",
+            });
+          }
+        }, afterHeaderIn + 700 + mobileTitleOutDuration));
       } else {
         // Desktop: original timing, no fade sequence
         timeouts.push(window.setTimeout(() => {
@@ -359,18 +406,142 @@ export default function HomePage() {
     };
   }, []);
 
+  useEffect(() => {
+    const textPanel = mainImageTextRef.current;
+    if (!textPanel) return;
+    const resumePanel = textPanel.querySelector<HTMLElement>(".resume-panel");
+    if (!resumePanel) return;
+
+    if (window.innerWidth > 960) {
+      gsap.set(textPanel, { clearProps: "all" });
+      gsap.set(resumePanel, { clearProps: "all" });
+      return;
+    }
+
+    let rafId = 0;
+
+    const resumeEntries = Array.from(
+      textPanel.querySelectorAll<HTMLElement>(".resume-entry")
+    );
+
+    gsap.set(textPanel, { opacity: 1, x: 0, visibility: "visible" });
+    gsap.set(resumePanel, { opacity: 0, x: 50 });
+    if (resumeEntries.length) gsap.set(resumeEntries, { opacity: 0, y: 14 });
+
+    const revealTl = gsap.timeline({ paused: true });
+    revealTl.fromTo(
+      resumePanel,
+      { opacity: 0, x: 50 },
+      { opacity: 1, x: 0, ease: "power3.out", duration: 0.4 },
+      0
+    );
+    resumeEntries.forEach((item, i) => {
+      revealTl.fromTo(
+        item,
+        { opacity: 0, y: 14 },
+        { opacity: 1, y: 0, ease: "power2.out", duration: 0.9 },
+        0.2 + i * 0.3
+      );
+    });
+
+    const applyRevealProgress = () => {
+      rafId = 0;
+      if (window.innerWidth > 960) {
+        revealTl.progress(1);
+        return;
+      }
+
+      if (document.body.classList.contains("intro-active")) {
+        revealTl.progress(0);
+        rafId = window.requestAnimationFrame(applyRevealProgress);
+        return;
+      }
+
+      const rect = textPanel.getBoundingClientRect();
+      const viewportH = window.innerHeight || 1;
+      const start = viewportH * 0.78;
+      const end = -viewportH * 0.28;
+      const progress = gsap.utils.clamp(0, 1, (start - rect.top) / (start - end));
+      revealTl.progress(progress);
+    };
+
+    const onScroll = () => {
+      if (!rafId) rafId = window.requestAnimationFrame(applyRevealProgress);
+    };
+
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+
+    return () => {
+      if (rafId) window.cancelAnimationFrame(rafId);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      revealTl.kill();
+      gsap.set(textPanel, { clearProps: "all" });
+      gsap.set(resumePanel, { clearProps: "all" });
+      if (resumeEntries.length) gsap.set(resumeEntries, { clearProps: "all" });
+    };
+  }, []);
+
+  useEffect(() => {
+    const section = mainImageSectionRef.current;
+    const img = document.querySelector<HTMLElement>(".hero-featured-img");
+    const bridgeButton = mobileHeroButtonRef.current;
+    if (!section || !img || !bridgeButton) return;
+
+    let rafId = 0;
+
+    const applyMobileParallax = () => {
+      rafId = 0;
+
+      if (window.innerWidth > 960) {
+        gsap.set([img, bridgeButton], { clearProps: "transform" });
+        return;
+      }
+
+      if (document.body.classList.contains("intro-active")) {
+        gsap.set([img, bridgeButton], { clearProps: "transform" });
+        return;
+      }
+
+      const rect = section.getBoundingClientRect();
+      const viewportH = window.innerHeight || 1;
+      const progress = gsap.utils.clamp(0, 1, (-rect.top) / (viewportH * 1.1));
+      const imgY = gsap.utils.interpolate(0, 26, progress);
+      const bridgeY = gsap.utils.interpolate(0, -18, progress);
+
+      gsap.set(img, { y: imgY, force3D: true });
+      gsap.set(bridgeButton, { y: bridgeY, force3D: true });
+    };
+
+    const onScroll = () => {
+      if (!rafId) rafId = window.requestAnimationFrame(applyMobileParallax);
+    };
+
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+
+    return () => {
+      if (rafId) window.cancelAnimationFrame(rafId);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      gsap.set([img, bridgeButton], { clearProps: "transform" });
+    };
+  }, []);
+
   // ── Live clock (SF time) ──────────────────────────────────────────────────
   useEffect(() => {
-    const timeEl = document.querySelector(".time");
-    if (!timeEl) return;
-
     function updateTime() {
-      if (!timeEl) return;
-      timeEl.textContent = new Date().toLocaleTimeString("en-US", {
+      const timeStr = new Date().toLocaleTimeString("en-US", {
         timeZone: "America/Los_Angeles",
         hour:     "2-digit",
         minute:   "2-digit",
         hour12:   false,
+      });
+      document.querySelectorAll(".time").forEach(el => {
+        el.textContent = timeStr;
       });
     }
     updateTime();
@@ -384,14 +555,15 @@ export default function HomePage() {
       <div className="site">
 
         <header id="site-header">
-          <div className="site-header__left">
+          {/* ── Desktop header (hidden on mobile) ── */}
+          <div className="site-header__left desktop-only-header">
             <h2 className="logo">
               <a href="#site-header" className="cursor-can-hover" onClick={handleNameClick}>
                 George Ma
               </a>
             </h2>
           </div>
-          <nav className="header-nav site-header__center" aria-label="Primary">
+          <nav className="header-nav site-header__center desktop-only-header" aria-label="Primary">
             <a href="#section-background" className="cursor-can-hover" onClick={handleAboutClick}>ABOUT</a>
             <a>&nbsp;&nbsp;</a>
             <a href="#section-projects" className="cursor-can-hover" onClick={handleProjectsClick}>PROJECTS</a>
@@ -402,7 +574,7 @@ export default function HomePage() {
             <a>&nbsp;&nbsp;</a>
             <a href="tel:+16615133350" className="cursor-can-hover">PHONE</a>
           </nav>
-          <div className="site-header__right">
+          <div className="site-header__right desktop-only-header">
             <div className="header-info">
               <span className="location">san diego, ca</span>&nbsp;
               <span className="time">—:—</span>
@@ -411,6 +583,50 @@ export default function HomePage() {
                   <circle cx="8" cy="8" r="4" />
                 </svg>
               </span>
+            </div>
+          </div>
+
+          {/* ── Mobile header (hidden on desktop) ── */}
+          <div className={`mobile-header-wrap${mobileNavOpen ? " nav-open" : ""}`}>
+            {/* Panel A: default — name + location/time + MENU trigger */}
+            <div className="mobile-panel mobile-panel-default">
+              <span className="mobile-identity">
+                <div className="header-info" style={{display:"inline"}}>
+                  <a href="#site-header" onClick={handleNameClick}>
+                    <span className="location">san diego, ca</span>&nbsp;
+                    <span className="time mobile-time">—:—</span>
+                    <span className="menu-dot-container" aria-hidden="true">
+                      <svg className="menu-dot" width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="8" cy="8" r="4" />
+                      </svg>
+                    </span>
+                  </a>
+                </div>
+              </span>
+              <button
+                className="mobile-menu-btn"
+                aria-label="Open navigation"
+                onClick={() => setMobileNavOpen(true)}
+              >
+                MENU
+              </button>
+            </div>
+
+            {/* Panel B: nav links */}
+            <div className="mobile-panel mobile-panel-nav" aria-hidden={!mobileNavOpen}>
+              <button
+                className="mobile-back-btn"
+                aria-label="Close navigation"
+                onClick={() => setMobileNavOpen(false)}
+              >
+                BACK
+              </button>
+              <nav className="mobile-nav-links" aria-label="Primary mobile">
+                <a href="https://github.com/itsgeorgema" target="_blank">GITHUB</a>
+                <a href="https://www.linkedin.com/in/ggeorgema/" target="_blank">LINKEDIN</a>
+                <a href="mailto:georgema2020@gmail.com">EMAIL</a>
+                <a href="tel:+16615133350">PHONE</a>
+              </nav>
             </div>
           </div>
         </header>
@@ -435,9 +651,8 @@ export default function HomePage() {
 
                     <div className="grid__animation-wrapper" ref={mainImageRef}>
                       <div className="grid grid--layout-0" data-name="Compartment Chair">
-                        <a
-                          href="#"
-                          className="grid__item grid__item--featured cursor-can-hover"
+                        <div
+                          className="grid__item grid__item--featured"
                           aria-label="Compartment Chair"
                         >
                           <div className="grid__item-image">
@@ -457,8 +672,21 @@ export default function HomePage() {
                               />
                             </div>
                           </div>
-                        </a>
+                        </div>
                       </div>
+                    </div>
+
+                    <div className="mobile-hero-bridge" ref={mobileHeroBridgeRef}>
+                      <button
+                        type="button"
+                        className="mobile-hero-bridge__button"
+                        ref={mobileHeroButtonRef}
+                        onClick={() => smoothScrollTo(aboutScrollTargetRef.current || window.innerHeight)}
+                        aria-label="Scroll to background section"
+                      >
+                        <span className="mobile-hero-bridge__label">Scroll</span>
+                        <span className="mobile-hero-bridge__arrow" aria-hidden="true">↓</span>
+                      </button>
                     </div>
 
                     <div className="main-image-text-panel" ref={mainImageTextRef}>
