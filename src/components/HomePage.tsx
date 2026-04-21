@@ -487,8 +487,7 @@ export default function HomePage() {
   useEffect(() => {
     const section = mainImageSectionRef.current;
     const img = document.querySelector<HTMLElement>(".hero-featured-img");
-    const bridgeButton = mobileHeroButtonRef.current;
-    if (!section || !img || !bridgeButton) return;
+    if (!section || !img) return;
 
     let rafId = 0;
 
@@ -496,12 +495,12 @@ export default function HomePage() {
       rafId = 0;
 
       if (window.innerWidth > 960) {
-        gsap.set([img, bridgeButton], { clearProps: "transform" });
+        gsap.set(img, { clearProps: "transform" });
         return;
       }
 
       if (document.body.classList.contains("intro-active")) {
-        gsap.set([img, bridgeButton], { clearProps: "transform" });
+        gsap.set(img, { clearProps: "transform" });
         return;
       }
 
@@ -509,10 +508,8 @@ export default function HomePage() {
       const viewportH = window.innerHeight || 1;
       const progress = gsap.utils.clamp(0, 1, (-rect.top) / (viewportH * 1.1));
       const imgY = gsap.utils.interpolate(0, 26, progress);
-      const bridgeY = gsap.utils.interpolate(0, -18, progress);
 
       gsap.set(img, { y: imgY, force3D: true });
-      gsap.set(bridgeButton, { y: bridgeY, force3D: true });
     };
 
     const onScroll = () => {
@@ -527,7 +524,7 @@ export default function HomePage() {
       if (rafId) window.cancelAnimationFrame(rafId);
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
-      gsap.set([img, bridgeButton], { clearProps: "transform" });
+      gsap.set(img, { clearProps: "transform" });
     };
   }, []);
 
