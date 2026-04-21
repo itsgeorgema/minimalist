@@ -459,7 +459,7 @@ export default function HomePage() {
 
       const rect = textPanel.getBoundingClientRect();
       const viewportH = window.innerHeight || 1;
-      const start = viewportH * 0.78;
+      const start = viewportH * 0.42;
       const end = -viewportH * 0.18;
       const progress = gsap.utils.clamp(0, 1, (start - rect.top) / (start - end));
       revealTl.progress(progress);

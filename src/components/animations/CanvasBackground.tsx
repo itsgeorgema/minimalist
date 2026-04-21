@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 // ---------------------------------------------------------------------------
 // Shaders – inlined to avoid GLSL loader config in Next.js
@@ -199,6 +200,7 @@ function makeBlurTexture(): THREE.DataTexture {
 
 export default function CanvasBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const isMobile = useMediaQuery("(max-width: 960px), (hover: none), (pointer: coarse)");
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -284,6 +286,8 @@ export default function CanvasBackground() {
       blurTex.dispose();
     };
   }, []);
+
+  if (isMobile) return null;
 
   return (
     <canvas
