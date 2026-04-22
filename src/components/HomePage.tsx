@@ -685,7 +685,7 @@ export default function HomePage() {
             <a>&nbsp;&nbsp;</a>
             <a href="https://www.linkedin.com/in/ggeorgema/" className="cursor-can-hover" target="_blank">LINKEDIN</a>
             <a>&nbsp;&nbsp;</a>
-            <a href="tel:+16615133350" className="cursor-can-hover">PHONE</a>
+            <a href="#site-footer" className="cursor-can-hover" onClick={handleContactClick}>CONTACT</a>
           </nav>
           <div className="site-header__right desktop-only-header">
             <div className="header-info">
