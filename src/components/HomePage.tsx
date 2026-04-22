@@ -279,13 +279,6 @@ export default function HomePage() {
 
     const isMobile = () => window.innerWidth <= 960;
 
-    // On mobile: everything is static — CSS handles layout, native scroll handles scrolling
-    if (isMobile()) {
-      gsap.set(imgWrap,   { clearProps: "all" });
-      gsap.set(textPanel, { clearProps: "all" });
-      return () => { mounted = false; };
-    }
-
     // Resolve when the intro animation has completed
     const waitForIntro = () =>
       new Promise<void>((resolve) => {
@@ -295,6 +288,43 @@ export default function HomePage() {
             : resolve();
         check();
       });
+
+    // On mobile: skip GSAP timeline but still init Lenis for smooth parallax scroll
+    if (isMobile()) {
+      gsap.set(imgWrap,   { clearProps: "all" });
+      gsap.set(textPanel, { clearProps: "all" });
+
+      waitForIntro().then(() => {
+        if (!mounted) return;
+
+        // Set scroll target for the "Scroll↓" button to the background panel
+        const textPanelEl = mainImageTextRef.current;
+        if (textPanelEl) {
+          aboutScrollTargetRef.current =
+            textPanelEl.getBoundingClientRect().top + window.scrollY - 60;
+        }
+
+        import("locomotive-scroll").then(({ default: LocomotiveScroll }) => {
+          if (!mounted) return;
+          locoScroll = new LocomotiveScroll({
+            lenisOptions: {
+              lerp:            0.08,
+              smoothWheel:     true,
+              smoothTouch:     true,
+              touchMultiplier: 0.55,
+              wheelMultiplier: 1,
+            },
+          });
+          locomotiveRef.current = locoScroll;
+        });
+      });
+
+      return () => {
+        mounted = false;
+        locoScroll?.destroy();
+        locomotiveRef.current = null;
+      };
+    }
 
     // ── Image GSAP timeline ────────────────────────────────────────────────
     const tl = gsap.timeline({ paused: true });
@@ -506,8 +536,8 @@ export default function HomePage() {
 
       const rect = section.getBoundingClientRect();
       const viewportH = window.innerHeight || 1;
-      const progress = gsap.utils.clamp(0, 1, (-rect.top) / (viewportH * 1.1));
-      const imgY = gsap.utils.interpolate(0, 26, progress);
+      const progress = gsap.utils.clamp(0, 1, (-rect.top) / (viewportH * 1.4));
+      const imgY = gsap.utils.interpolate(0, 55, progress);
 
       gsap.set(img, { y: imgY, force3D: true });
     };
@@ -525,6 +555,75 @@ export default function HomePage() {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
       gsap.set(img, { clearProps: "transform" });
+    };
+  }, []);
+
+  // ── Mobile resume entry parallax ─────────────────────────────────────────
+  useEffect(() => {
+    const textPanel = mainImageTextRef.current;
+    if (!textPanel) return;
+    if (window.innerWidth > 960) return;
+
+    const header = textPanel.querySelector<HTMLElement>(".resume-panel__header");
+    const projectsTitle = document.querySelector<HTMLElement>(".mobile-projects-title");
+    const entries = Array.from(
+      textPanel.querySelectorAll<HTMLElement>(".resume-entry")
+    );
+    if (!entries.length) return;
+
+    // Each entry gets a different parallax depth — earlier entries move more
+    const speeds = [28, 28, 28, 28];
+
+    let rafId = 0;
+
+    const applyParallax = () => {
+      rafId = 0;
+      if (window.innerWidth > 960) return;
+      if (document.body.classList.contains("intro-active")) return;
+
+      const viewportH = window.innerHeight || 1;
+
+      if (header) {
+        const rect = header.getBoundingClientRect();
+        const center = rect.top + rect.height / 2;
+        const progress = gsap.utils.clamp(0, 1, (viewportH - center) / viewportH);
+        const y = gsap.utils.interpolate(38, -38, progress);
+        gsap.set(header, { y, force3D: true });
+      }
+
+      if (projectsTitle) {
+        const rect = projectsTitle.getBoundingClientRect();
+        const center = rect.top + rect.height / 2;
+        const progress = gsap.utils.clamp(0, 1, (viewportH - center) / viewportH);
+        const y = gsap.utils.interpolate(18, -18, progress);
+        gsap.set(projectsTitle, { y, force3D: true });
+      }
+
+      entries.forEach((entry, i) => {
+        const rect = entry.getBoundingClientRect();
+        const center = rect.top + rect.height / 2;
+        const progress = gsap.utils.clamp(0, 1, (viewportH - center) / viewportH);
+        const speed = speeds[i] ?? 4;
+        const y = gsap.utils.interpolate(speed, -speed, progress);
+        gsap.set(entry, { y, force3D: true });
+      });
+    };
+
+    const onScroll = () => {
+      if (!rafId) rafId = window.requestAnimationFrame(applyParallax);
+    };
+
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+
+    return () => {
+      if (rafId) window.cancelAnimationFrame(rafId);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (header) gsap.set(header, { clearProps: "transform" });
+      if (projectsTitle) gsap.set(projectsTitle, { clearProps: "transform" });
+      entries.forEach(e => gsap.set(e, { clearProps: "transform" }));
     };
   }, []);
 
@@ -755,6 +854,8 @@ export default function HomePage() {
                 </div>
               </div>
 
+              <p className="mobile-projects-title">Projects</p>
+
               {/* ── Featured Projects — 4-col sticky grid ────────────────────────────── */}
               {/*  Flat row-major layout: cells are direct grid children so CSS    */}
               {/*  Grid controls all row heights uniformly. Spotify sticks at top. */}
@@ -767,14 +868,13 @@ export default function HomePage() {
                   <div className="exp-sticky-card">
                     <span className="exp-sticky-card__num">01</span>
                     <div className="exp-sticky-card__body">
-                      <p className="exp-sticky-card__name">Spotify Mood Player</p>
-                      <p className="exp-sticky-card__category">Full-Stack AI</p>
-                      <p className="exp-sticky-card__desc">AI categorizes and plays Spotify songs by mood.</p>
-                      <p className="exp-sticky-card__stack">TypeScript · React · Python · Flask · OpenAI · AWS</p>
+                      <p className="exp-sticky-card__name">Watchdog</p>
+                      <p className="exp-sticky-card__category">DevOps · AI</p>
+                      <p className="exp-sticky-card__desc">AI-powered CI/CD automation for PR reviews, linting, and security checks.</p>
+                      <p className="exp-sticky-card__stack">Python · FastAPI · Node.js · GitHub Actions · OpenAI · AWS</p>
                       <div className="exp-sticky-card__links">
-                        <a href="https://spotify-mood-player.vercel.app/" target="_blank" className="cursor-can-hover">↗ Live</a>
-                        <a href="https://github.com/itsgeorgema/spotify-mood-player" target="_blank" className="cursor-can-hover">GitHub</a>
-                        <a href="https://www.youtube.com/watch?v=Iloqfjgzkps" target="_blank" className="cursor-can-hover">Demo</a>
+                        <a href="https://github.com/itsgeorgema/watchdog" target="_blank" className="cursor-can-hover">↗︎ GitHub</a>
+                        <a href="https://www.youtube.com/watch?v=SPpE-DwsTb8" target="_blank" className="cursor-can-hover">Demo</a>
                       </div>
                     </div>
                   </div>
@@ -787,7 +887,7 @@ export default function HomePage() {
                       <p className="exp-sticky-card__desc">Generates original Pokemon images and stats via a Conditional GAN.</p>
                       <p className="exp-sticky-card__stack">Python · PyTorch · CUDA · Flask · Docker</p>
                       <div className="exp-sticky-card__links">
-                        <a href="https://original-pokemon-generator-project.fly.dev/" target="_blank" className="cursor-can-hover">↗ Live</a>
+                        <a href="https://original-pokemon-generator-project.fly.dev/" target="_blank" className="cursor-can-hover">↗︎ Live</a>
                         <a href="https://github.com/itsgeorgema/Pokemon-Generator" target="_blank" className="cursor-can-hover">GitHub</a>
                         <a href="https://www.youtube.com/watch?v=SFcy8QjVgsY" target="_blank" className="cursor-can-hover">Demo</a>
                       </div>
@@ -802,17 +902,17 @@ export default function HomePage() {
                   <div className="exp-sticky-card">
                     <span className="exp-sticky-card__num">03</span>
                     <div className="exp-sticky-card__body">
-                      <p className="exp-sticky-card__name">Watchdog</p>
-                      <p className="exp-sticky-card__category">DevOps · AI</p>
-                      <p className="exp-sticky-card__desc">AI-powered CI/CD automation for PR reviews, linting, and security checks.</p>
-                      <p className="exp-sticky-card__stack">Python · FastAPI · Node.js · GitHub Actions · OpenAI · AWS</p>
+                      <p className="exp-sticky-card__name">Spotify Mood Player</p>
+                      <p className="exp-sticky-card__category">Full-Stack AI</p>
+                      <p className="exp-sticky-card__desc">AI categorizes and plays Spotify songs by mood.</p>
+                      <p className="exp-sticky-card__stack">TypeScript · React · Python · Flask · OpenAI · AWS</p>
                       <div className="exp-sticky-card__links">
-                        <a href="https://github.com/itsgeorgema/watchdog" target="_blank" className="cursor-can-hover">↗ GitHub</a>
-                        <a href="https://www.youtube.com/watch?v=SPpE-DwsTb8" target="_blank" className="cursor-can-hover">Demo</a>
+                        <a href="https://spotify-mood-player.vercel.app/" target="_blank" className="cursor-can-hover">↗︎ Live</a>
+                        <a href="https://github.com/itsgeorgema/spotify-mood-player" target="_blank" className="cursor-can-hover">GitHub</a>
+                        <a href="https://www.youtube.com/watch?v=Iloqfjgzkps" target="_blank" className="cursor-can-hover">Demo</a>
                       </div>
                     </div>
                   </div>
-
                 </div>
 
                 {/* Grid B — rows 3-4: AKPsi sticks here, Pokemon Generator has exited */}
@@ -827,7 +927,7 @@ export default function HomePage() {
                       <p className="exp-sticky-card__desc">Museum heist adventure game inspired by Zork, playable via CLI.</p>
                       <p className="exp-sticky-card__stack">Java</p>
                       <div className="exp-sticky-card__links">
-                        <a href="https://github.com/itsgeorgema/text-based-adventure-game" target="_blank" className="cursor-can-hover">↗GitHub</a>
+                        <a href="https://github.com/itsgeorgema/text-based-adventure-game" target="_blank" className="cursor-can-hover">↗︎GitHub</a>
                         <a href="https://www.youtube.com/watch?v=PNoRD2KLa6k" target="_blank" className="cursor-can-hover">Demo</a>
                       </div>
                     </div>
@@ -840,7 +940,7 @@ export default function HomePage() {
                       <p className="exp-sticky-card__desc">Official chapter website for UCSD Alpha Kappa Psi.</p>
                       <p className="exp-sticky-card__stack">Next.js · React · TypeScript · Supabase</p>
                       <div className="exp-sticky-card__links">
-                        <a href="https://akpsiucsd.com/" target="_blank" className="cursor-can-hover">↗ Live</a>
+                        <a href="https://akpsiucsd.com/" target="_blank" className="cursor-can-hover">↗︎ Live</a>
                         <a href="https://github.com/itsgeorgema/ucsd-akpsi-website" target="_blank" className="cursor-can-hover">GitHub</a>
                       </div>
                     </div>
@@ -853,7 +953,7 @@ export default function HomePage() {
                       <p className="exp-sticky-card__desc">Built with Next.js, Three.js, Lenis, GSAP, and WebGL.</p>
                       <p className="exp-sticky-card__stack">Next.js · React · Three.js · Lenis · GSAP · WebGL · TypeScript</p>
                       <div className="exp-sticky-card__links">
-                        <a href="https://ggeorgema.com/" target="_blank" className="cursor-can-hover">↗ Live</a>
+                        <a href="https://ggeorgema.com/" target="_blank" className="cursor-can-hover">↗︎ Live</a>
                         <a href="https://github.com/itsgeorgema/minimalist" target="_blank" className="cursor-can-hover">GitHub</a>
                       </div>
                     </div>
@@ -872,12 +972,12 @@ export default function HomePage() {
                       <p className="exp-sticky-card__desc">Stats and data explorer for the 2025 NBA Draft class.</p>
                       <p className="exp-sticky-card__stack">React · TypeScript · Vite · Tailwind</p>
                       <div className="exp-sticky-card__links">
-                        <a href="https://nba-draft-hub-six.vercel.app/" target="_blank" className="cursor-can-hover">↗ Live</a>
+                        <a href="https://nba-draft-hub-six.vercel.app/" target="_blank" className="cursor-can-hover">↗︎ Live</a>
                         <a href="https://github.com/itsgeorgema/nba-draft-hub" target="_blank" className="cursor-can-hover">GitHub</a>
                       </div>  
                     </div>
                   </div>
-
+                  <div className="mobile-grid-ghost" aria-hidden="true" />
                 </div>
 
               </div>
@@ -914,6 +1014,7 @@ export default function HomePage() {
                   </div>
                 </div>
               </footer>
+              <div className="mobile-scroll-buffer" aria-hidden="true" />
             </div>
           </section>
         </main>
