@@ -7,6 +7,8 @@ import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 
 gsap.registerPlugin(ScrollToPlugin);
 
+const MOBILE_BREAKPOINT = 960;
+
 export default function HomePage() {
   const [year, setYear] = useState<number | null>(null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -276,8 +278,10 @@ export default function HomePage() {
 
     let mounted    = true;
     let locoScroll: any = null;
+    let resizeRaf = 0;
+    let removeResizeListener: (() => void) | null = null;
 
-    const isMobile = () => window.innerWidth <= 960;
+    const isMobile = () => window.innerWidth <= MOBILE_BREAKPOINT;
 
     // Resolve when the intro animation has completed
     const waitForIntro = () =>
@@ -310,6 +314,8 @@ export default function HomePage() {
             lenisOptions: {
               lerp:            0.08,
               smoothWheel:     true,
+              syncTouch:       true,
+              syncTouchLerp:   0.075,
               touchMultiplier: 0.55,
               wheelMultiplier: 1,
             },
@@ -385,6 +391,7 @@ export default function HomePage() {
 
       projTl.clear();
       projTl.to(runner, { x: -scrollBudget, ease: "none", duration: 1 });
+      locoScroll?.resize?.();
     };
 
     waitForIntro().then(() => {
@@ -402,6 +409,8 @@ export default function HomePage() {
           lenisOptions: {
             lerp:            0.07,
             smoothWheel:     true,
+            syncTouch:       true,
+            syncTouchLerp:   0.08,
             wheelMultiplier: 1,
             touchMultiplier: 2,
           },
@@ -420,8 +429,20 @@ export default function HomePage() {
           },
         });
 
+        const onResize = () => {
+          if (resizeRaf) return;
+          resizeRaf = window.requestAnimationFrame(() => {
+            resizeRaf = 0;
+            computeBounds();
+          });
+        };
+
         locomotiveRef.current = locoScroll;
-        window.addEventListener("resize", computeBounds, { passive: true });
+        window.addEventListener("resize", onResize, { passive: true });
+        removeResizeListener = () => {
+          if (resizeRaf) window.cancelAnimationFrame(resizeRaf);
+          window.removeEventListener("resize", onResize);
+        };
       });
     });
 
@@ -429,9 +450,9 @@ export default function HomePage() {
       mounted = false;
       tl.kill();
       projTl.kill();
+      removeResizeListener?.();
       locoScroll?.destroy();
       locomotiveRef.current = null;
-      window.removeEventListener("resize", computeBounds);
     };
   }, []);
 
@@ -441,7 +462,7 @@ export default function HomePage() {
     const resumePanel = textPanel.querySelector<HTMLElement>(".resume-panel");
     if (!resumePanel) return;
 
-    if (window.innerWidth > 960) {
+    if (window.innerWidth > MOBILE_BREAKPOINT) {
       gsap.set(textPanel, { clearProps: "all" });
       gsap.set(resumePanel, { clearProps: "all" });
       return;
@@ -475,7 +496,7 @@ export default function HomePage() {
 
     const applyRevealProgress = () => {
       rafId = 0;
-      if (window.innerWidth > 960) {
+      if (window.innerWidth > MOBILE_BREAKPOINT) {
         revealTl.progress(1);
         return;
       }
@@ -500,7 +521,7 @@ export default function HomePage() {
 
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
+    window.addEventListener("resize", onScroll, { passive: true });
 
     return () => {
       if (rafId) window.cancelAnimationFrame(rafId);
@@ -523,7 +544,7 @@ export default function HomePage() {
     const applyMobileParallax = () => {
       rafId = 0;
 
-      if (window.innerWidth > 960) {
+      if (window.innerWidth > MOBILE_BREAKPOINT) {
         gsap.set(img, { clearProps: "transform" });
         return;
       }
@@ -547,7 +568,7 @@ export default function HomePage() {
 
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
+    window.addEventListener("resize", onScroll, { passive: true });
 
     return () => {
       if (rafId) window.cancelAnimationFrame(rafId);
@@ -557,11 +578,10 @@ export default function HomePage() {
     };
   }, []);
 
-  // ── Mobile resume entry parallax ─────────────────────────────────────────
   useEffect(() => {
     const textPanel = mainImageTextRef.current;
     if (!textPanel) return;
-    if (window.innerWidth > 960) return;
+    if (window.innerWidth > MOBILE_BREAKPOINT) return;
 
     const header = textPanel.querySelector<HTMLElement>(".resume-panel__header");
     const projectsTitle = document.querySelector<HTMLElement>(".mobile-projects-title");
@@ -570,14 +590,12 @@ export default function HomePage() {
     );
     if (!entries.length) return;
 
-    // Each entry gets a different parallax depth — earlier entries move more
     const speeds = [28, 28, 28, 28];
-
     let rafId = 0;
 
     const applyParallax = () => {
       rafId = 0;
-      if (window.innerWidth > 960) return;
+      if (window.innerWidth > MOBILE_BREAKPOINT) return;
       if (document.body.classList.contains("intro-active")) return;
 
       const viewportH = window.innerHeight || 1;
@@ -614,7 +632,7 @@ export default function HomePage() {
 
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
+    window.addEventListener("resize", onScroll, { passive: true });
 
     return () => {
       if (rafId) window.cancelAnimationFrame(rafId);
@@ -622,7 +640,7 @@ export default function HomePage() {
       window.removeEventListener("resize", onScroll);
       if (header) gsap.set(header, { clearProps: "transform" });
       if (projectsTitle) gsap.set(projectsTitle, { clearProps: "transform" });
-      entries.forEach(e => gsap.set(e, { clearProps: "transform" }));
+      entries.forEach((entry) => gsap.set(entry, { clearProps: "transform" }));
     };
   }, []);
 

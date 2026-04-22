@@ -213,13 +213,18 @@ export default function CanvasBackground() {
     const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, -100, 100);
     camera.position.set(0, 0, 10);
 
-    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false });
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      alpha: true,
+      antialias: false,
+      powerPreference: "high-performance",
+    });
 
     const handleResize = () => {
       const w = window.innerWidth;
       const h = window.innerHeight;
-      renderer.setSize(w, h);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+      renderer.setSize(w, h, false);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
     };
     handleResize();
 
@@ -257,11 +262,17 @@ export default function CanvasBackground() {
     const start = performance.now();
     let rafId: number;
     let firstFrame = true;
+    let running = true;
 
-    const tick = () => {
-      rafId = requestAnimationFrame(tick);
+    const renderFrame = () => {
       material.uniforms.time.value = (performance.now() - start) * 0.001;
       renderer.render(scene, camera);
+    };
+
+    const tick = () => {
+      if (!running) return;
+      rafId = requestAnimationFrame(tick);
+      renderFrame();
       if (firstFrame) {
         firstFrame = false;
         // Fade in after the first frame is fully rendered so the canvas
@@ -274,11 +285,24 @@ export default function CanvasBackground() {
     };
     tick();
 
+    const handleVisibilityChange = () => {
+      running = document.visibilityState !== "hidden";
+      if (running) {
+        renderFrame();
+        rafId = requestAnimationFrame(tick);
+      } else {
+        cancelAnimationFrame(rafId);
+      }
+    };
+
     window.addEventListener("resize", handleResize);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
+      running = false;
       cancelAnimationFrame(rafId);
       window.removeEventListener("resize", handleResize);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       renderer.dispose();
       geometry.dispose();
       material.dispose();

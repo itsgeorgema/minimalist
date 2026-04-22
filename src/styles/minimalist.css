@@ -1273,6 +1273,7 @@ body.intro-active .mobile-projects-title {
 }
 
 .projects-sticky-frame {
+  contain: layout paint;
   height: 100vh;
   margin-left: calc((100% - 100vw) / 2);
   overflow: hidden;
@@ -1416,6 +1417,7 @@ body.intro-active .mobile-projects-title {
    Featured projects — 4-column CSS grid
    -------------------------------------------------------------------------- */
 .exp-sticky-section {
+  contain: layout paint;
   margin: 0 20px;
   position: relative;
 }
