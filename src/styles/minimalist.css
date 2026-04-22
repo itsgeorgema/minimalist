@@ -695,7 +695,6 @@ body:not(.intro-active) #homepage .hero-image-base {
 }
 
 #homepage .hero-featured-img {
-  filter: contrast(0.82) saturate(0.72) brightness(0.95);
   transition: opacity 750ms cubic-bezier(0.22, 1, 0.36, 1) 100ms;
   z-index: 3;
 }

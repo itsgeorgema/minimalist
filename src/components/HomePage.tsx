@@ -761,7 +761,7 @@ export default function HomePage() {
                               <span className="hero-image-base" aria-hidden="true" />
                               <img
                                 className="hero-featured-img"
-                                src="/assets/milan.jpg"
+                                src="/assets/milan.png"
                                 alt="Featured"
                                 width={1600}
                                 height={2000}
