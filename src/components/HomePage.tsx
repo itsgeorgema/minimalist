@@ -312,11 +312,11 @@ export default function HomePage() {
           if (!mounted) return;
           locoScroll = new LocomotiveScroll({
             lenisOptions: {
-              lerp:            0.08,
+              lerp:            0.07,
               smoothWheel:     true,
               syncTouch:       true,
-              syncTouchLerp:   0.075,
-              touchMultiplier: 0.55,
+              syncTouchLerp:   0.08,
+              touchMultiplier: 2,
               wheelMultiplier: 1,
             },
           });
