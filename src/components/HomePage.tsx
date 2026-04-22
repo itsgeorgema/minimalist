@@ -310,7 +310,6 @@ export default function HomePage() {
             lenisOptions: {
               lerp:            0.08,
               smoothWheel:     true,
-              smoothTouch:     true,
               touchMultiplier: 0.55,
               wheelMultiplier: 1,
             },
