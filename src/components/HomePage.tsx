@@ -316,7 +316,7 @@ export default function HomePage() {
               smoothWheel:     true,
               syncTouch:       true,
               syncTouchLerp:   0.08,
-              touchMultiplier: 2,
+              touchMultiplier: 1.2,
               wheelMultiplier: 1,
             },
           });
