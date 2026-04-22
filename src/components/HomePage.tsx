@@ -4,6 +4,7 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
+import { isTouchOrCoarse } from "@/components/util";
 
 gsap.registerPlugin(ScrollToPlugin);
 
@@ -281,7 +282,7 @@ export default function HomePage() {
     let resizeRaf = 0;
     let removeResizeListener: (() => void) | null = null;
 
-    const isMobile = () => window.innerWidth <= MOBILE_BREAKPOINT;
+    const useNativeTouchScroll = () => isTouchOrCoarse();
 
     // Resolve when the intro animation has completed
     const waitForIntro = () =>
@@ -293,8 +294,8 @@ export default function HomePage() {
         check();
       });
 
-    // On mobile: skip GSAP timeline but still init Lenis for smooth parallax scroll
-    if (isMobile()) {
+    // On touch/coarse devices: skip Locomotive and use native browser scrolling
+    if (useNativeTouchScroll()) {
       gsap.set(imgWrap,   { clearProps: "all" });
       gsap.set(textPanel, { clearProps: "all" });
 
@@ -307,26 +308,10 @@ export default function HomePage() {
           aboutScrollTargetRef.current =
             textPanelEl.getBoundingClientRect().top + window.scrollY - 60;
         }
-
-        import("locomotive-scroll").then(({ default: LocomotiveScroll }) => {
-          if (!mounted) return;
-          locoScroll = new LocomotiveScroll({
-            lenisOptions: {
-              lerp:            0.07,
-              smoothWheel:     true,
-              syncTouch:       true,
-              syncTouchLerp:   0.08,
-              touchMultiplier: 1.2,
-              wheelMultiplier: 1,
-            },
-          });
-          locomotiveRef.current = locoScroll;
-        });
       });
 
       return () => {
         mounted = false;
-        locoScroll?.destroy();
         locomotiveRef.current = null;
       };
     }
