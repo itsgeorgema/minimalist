@@ -620,7 +620,7 @@ body.intro-active:not(.intro-unveiled) #homepage {
 
 @media (max-width: 960px) {
   #homepage .title {
-    font-size: clamp(1px, 32vw, 415px);
+    font-size: clamp(1px, 30vw, 390px);
     margin: 0 0 calc(-1.35vw + 15px);
     width: fit-content;
     max-width: calc(100vw - 20px);
