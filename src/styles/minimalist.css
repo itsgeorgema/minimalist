@@ -602,25 +602,29 @@ body.intro-active:not(.intro-unveiled) #homepage {
 .title {
   position: relative;
   z-index: 30;
+  display: block;
 }
 
 #homepage .title {
-  font-size: clamp(1px, 38.89vw, 500px);
+  font-size: min(37vw, calc((100vw - 40px) / 3.08), 680px);
   font-weight: 700;
-  letter-spacing: -0.09em;
+  letter-spacing: -0.075em;
   line-height: 0.8;
-  margin-bottom: calc(-1.35vw + 25px);
-  transform: scaleX(0.97);
-  transform-origin: left center;
+  margin: 0 0 calc(-1.35vw + 25px);
+  text-align: center;
+  width: max-content;
+  max-width: none;
+  left: 50%;
+  transform: translateX(calc(-50% - 0.05em));
 }
 
 @media (max-width: 960px) {
   #homepage .title {
     font-size: clamp(1px, 32vw, 415px);
-    margin-bottom: calc(-1.35vw + 15px);
-    text-align: center;
-    transform: none;
-    margin-left: -0.09em;
+    margin: 0 0 calc(-1.35vw + 15px);
+    width: fit-content;
+    max-width: calc(100vw - 20px);
+    transform: translateX(calc(-50% - 0.05em));
   }
 }
 
