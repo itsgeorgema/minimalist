@@ -932,7 +932,7 @@ export default function HomePage() {
                       <p className="exp-sticky-card__desc">Official chapter website for UCSD Alpha Kappa Psi.</p>
                       <p className="exp-sticky-card__stack">Next.js · React · TypeScript · Supabase</p>
                       <div className="exp-sticky-card__links">
-                        <a href="https://akpsiucsd.com/" target="_blank" className="cursor-can-hover">↗︎ Live</a>
+                        <a href="https://akpsiatucsd.com/" target="_blank" className="cursor-can-hover">↗︎ Live</a>
                         <a href="https://github.com/itsgeorgema/ucsd-akpsi-website" target="_blank" className="cursor-can-hover">GitHub</a>
                       </div>
                     </div>
