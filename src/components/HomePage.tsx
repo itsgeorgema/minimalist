@@ -569,7 +569,6 @@ export default function HomePage() {
     if (window.innerWidth > MOBILE_BREAKPOINT) return;
 
     const header = textPanel.querySelector<HTMLElement>(".resume-panel__header");
-    const projectsTitle = document.querySelector<HTMLElement>(".mobile-projects-title");
     const entries = Array.from(
       textPanel.querySelectorAll<HTMLElement>(".resume-entry")
     );
@@ -591,14 +590,6 @@ export default function HomePage() {
         const progress = gsap.utils.clamp(0, 1, (viewportH - center) / viewportH);
         const y = gsap.utils.interpolate(38, -38, progress);
         gsap.set(header, { y, force3D: true });
-      }
-
-      if (projectsTitle) {
-        const rect = projectsTitle.getBoundingClientRect();
-        const center = rect.top + rect.height / 2;
-        const progress = gsap.utils.clamp(0, 1, (viewportH - center) / viewportH);
-        const y = gsap.utils.interpolate(18, -18, progress);
-        gsap.set(projectsTitle, { y, force3D: true });
       }
 
       entries.forEach((entry, i) => {
@@ -624,7 +615,6 @@ export default function HomePage() {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
       if (header) gsap.set(header, { clearProps: "transform" });
-      if (projectsTitle) gsap.set(projectsTitle, { clearProps: "transform" });
       entries.forEach((entry) => gsap.set(entry, { clearProps: "transform" }));
     };
   }, []);
