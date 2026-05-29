@@ -391,6 +391,7 @@ export default function HomePage() {
         if (!mounted) return;
 
         locoScroll = new LocomotiveScroll({
+          triggerRootMargin: "0px 0px -12% 0px",
           lenisOptions: {
             lerp:            0.07,
             smoothWheel:     true,
@@ -516,6 +517,63 @@ export default function HomePage() {
       gsap.set(textPanel, { clearProps: "all" });
       gsap.set(resumePanel, { clearProps: "all" });
       if (resumeEntries.length) gsap.set(resumeEntries, { clearProps: "all" });
+    };
+  }, []);
+
+  useEffect(() => {
+    const projectCards = Array.from(document.querySelectorAll<HTMLElement>(".exp-sticky-grid"))
+      .flatMap((grid) =>
+        Array.from(grid.querySelectorAll<HTMLElement>(".exp-sticky-card"))
+          .filter((card, index) => {
+            const rowIndex = Math.floor(index / 4);
+            return (
+              rowIndex % 2 === 0 &&
+              !card.classList.contains("exp-sticky-card--blank") &&
+              !card.classList.contains("exp-sticky-card--pinned")
+            );
+          })
+      );
+    if (!projectCards.length) return;
+
+    projectCards.forEach((card, index) => {
+      card.classList.add("exp-sticky-card--slide-ready");
+      card.dataset.slideDirection = index % 2 === 0 ? "left" : "right";
+      card.dataset.scroll = "";
+      card.dataset.scrollOffset = "60%";
+      card.dataset.scrollRepeat = "";
+    });
+
+    if (!isTouchOrCoarse() || !("IntersectionObserver" in window)) {
+      return () => {
+        projectCards.forEach((card) => {
+          card.classList.remove("exp-sticky-card--slide-ready", "is-inview");
+          delete card.dataset.slideDirection;
+          delete card.dataset.scroll;
+          delete card.dataset.scrollOffset;
+          delete card.dataset.scrollRepeat;
+        });
+      };
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          entry.target.classList.toggle("is-inview", entry.isIntersecting);
+        });
+      },
+      { rootMargin: "0px 0px -12% 0px", threshold: 0.18 }
+    );
+    projectCards.forEach((card) => observer.observe(card));
+
+    return () => {
+      observer.disconnect();
+      projectCards.forEach((card) => {
+        card.classList.remove("exp-sticky-card--slide-ready", "is-inview");
+        delete card.dataset.slideDirection;
+        delete card.dataset.scroll;
+        delete card.dataset.scrollOffset;
+        delete card.dataset.scrollRepeat;
+      });
     };
   }, []);
 
@@ -1014,6 +1072,8 @@ export default function HomePage() {
 
                   {/* Row 6 */}
                   <div className="exp-sticky-card exp-sticky-card--blank" />
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
                   <div className="exp-sticky-card">
                     <span className="exp-sticky-card__num">10</span>
                     <div className="exp-sticky-card__body">
@@ -1027,7 +1087,8 @@ export default function HomePage() {
                       </div>
                     </div>
                   </div>
-                  <div className="exp-sticky-card exp-sticky-card--blank" />
+
+                  {/* Row 7 */}
                   <div className="exp-sticky-card">
                     <span className="exp-sticky-card__num">11</span>
                     <div className="exp-sticky-card__body">
@@ -1041,8 +1102,6 @@ export default function HomePage() {
                       </div>
                     </div>
                   </div>
-                  {/* Row 3 — blank, extends Portfolio sticky to 2 rows */}
-                  <div className="exp-sticky-card exp-sticky-card--blank" />
                   <div className="exp-sticky-card exp-sticky-card--blank" />
                   <div className="exp-sticky-card exp-sticky-card--blank" />
                   <div className="exp-sticky-card exp-sticky-card--blank" />

@@ -1459,6 +1459,23 @@ body.intro-active .mobile-projects-title {
   padding: clamp(14px, 1.8vw, 28px);
 }
 
+.exp-sticky-card--slide-ready {
+  transition: transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.exp-sticky-card--slide-ready[data-slide-direction="left"] {
+  transform: translate3d(-100%, 0, 0);
+}
+
+.exp-sticky-card--slide-ready[data-slide-direction="right"] {
+  transform: translate3d(100%, 0, 0);
+}
+
+.exp-sticky-card--slide-ready.is-inview {
+  transform: translate3d(0, 0, 0);
+}
+
 .exp-sticky-card--blank {
   /* empty square — holds its row height so grid stays aligned */
 }
@@ -1553,6 +1570,15 @@ body.intro-active .mobile-projects-title {
 
   .exp-sticky-card__links a {
     font-size: 1.1rem !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .exp-sticky-card--slide-ready,
+  .exp-sticky-card--slide-ready[data-slide-direction="left"],
+  .exp-sticky-card--slide-ready[data-slide-direction="right"] {
+    transform: none;
+    transition: none;
   }
 }
 
