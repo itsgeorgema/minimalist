@@ -787,27 +787,27 @@ export default function HomePage() {
                           <div className="resume-entry">
                             <span className="resume-entry__num">01</span>
                             <div className="resume-entry__content">
-                              <p className="resume-entry__role">Software Engineer Co-op</p>
-                              <p className="resume-entry__meta"><span className="resume-entry__company">IBM</span><span className="resume-entry__period">Feb 2026 — Present</span></p>
-                              <p className="resume-entry__tag">Automation and AI: Infrastructure for Project Bob</p>
+                              <p className="resume-entry__role">Software Engineer Intern</p>
+                              <p className="resume-entry__meta"><span className="resume-entry__company">Capital One</span><span className="resume-entry__period">Jun 2026 — Aug 2026</span></p>
+                              <p className="resume-entry__tag">Enterprise Platforms: DevOps/SRE</p>
                             </div>
                           </div>
 
                           <div className="resume-entry">
                             <span className="resume-entry__num">02</span>
                             <div className="resume-entry__content">
-                              <p className="resume-entry__role">Software Engineer Intern</p>
-                              <p className="resume-entry__meta"><span className="resume-entry__company">Praxie AI</span><span className="resume-entry__period">Apr 2025 — Feb 2026</span></p>
-                              <p className="resume-entry__tag">Mobile and Backend Infrastructure with GCP and React Native</p>
+                              <p className="resume-entry__role">Software Engineer Co-op</p>
+                              <p className="resume-entry__meta"><span className="resume-entry__company">IBM</span><span className="resume-entry__period">Feb 2026 — May 2026</span></p>
+                              <p className="resume-entry__tag">Automation and AI: IBM Bob</p>
                             </div>
                           </div>
 
                           <div className="resume-entry">
                             <span className="resume-entry__num">03</span>
                             <div className="resume-entry__content">
-                              <p className="resume-entry__role">Lead Full-Stack Engineer</p>
-                              <p className="resume-entry__meta"><span className="resume-entry__company">Alpha Kappa Psi @ UCSD</span><span className="resume-entry__period">Dec 2024 — Jan 2026</span></p>
-                              <p className="resume-entry__tag">Full-Stack Development with Next.js and Supabase</p>
+                              <p className="resume-entry__role">Software Engineer Intern</p>
+                              <p className="resume-entry__meta"><span className="resume-entry__company">Praxie AI</span><span className="resume-entry__period">Apr 2025 — Feb 2026</span></p>
+                              <p className="resume-entry__tag">Mobile and Backend Infrastructure with GCP and React Native</p>
                             </div>
                           </div>
 
@@ -853,26 +853,79 @@ export default function HomePage() {
               {/*  Grid controls all row heights uniformly. Spotify sticks at top. */}
               <div className="exp-sticky-section">
 
-                {/* Grid A — rows 1-2: Pokemon Generator sticks here */}
+                {/* Grid A — rows 1-3: Neural eBPF pinned col 1 (staircase step 1); row 3 is blank overlap zone */}
                 <div className="exp-sticky-grid">
 
                   {/* Row 1 */}
-                  <div className="exp-sticky-card">
+                  <div className="exp-sticky-card exp-sticky-card--pinned">
                     <span className="exp-sticky-card__num">01</span>
                     <div className="exp-sticky-card__body">
-                      <p className="exp-sticky-card__name">Watchdog</p>
-                      <p className="exp-sticky-card__category">DevOps · AI</p>
-                      <p className="exp-sticky-card__desc">AI-powered CI/CD automation for PR reviews, linting, and security checks.</p>
-                      <p className="exp-sticky-card__stack">Python · FastAPI · Node.js · GitHub Actions · OpenAI · AWS</p>
+                      <p className="exp-sticky-card__name">Neural eBPF</p>
+                      <p className="exp-sticky-card__category">SRE · Infra · AI</p>
+                      <p className="exp-sticky-card__desc">Self-healing kernel agent that detects runaway processes via eBPF and autonomously applies mitigations using a LangGraph AI loop.</p>
+                      <p className="exp-sticky-card__stack">Go · eBPF · Kubernetes · LangGraph · Redis · React</p>
                       <div className="exp-sticky-card__links">
-                        <a href="https://github.com/itsgeorgema/watchdog" target="_blank" className="cursor-can-hover">↗︎ GitHub</a>
-                        <a href="https://www.youtube.com/watch?v=SPpE-DwsTb8" target="_blank" className="cursor-can-hover">Demo</a>
+                        <a href="https://github.com/itsgeorgema/neural-ebpf" target="_blank" className="cursor-can-hover">↗︎ GitHub</a>
                       </div>
                     </div>
                   </div>
                   <div className="exp-sticky-card exp-sticky-card--blank" />
-                  <div className="exp-sticky-card exp-sticky-card--pinned">
+                  <div className="exp-sticky-card">
                     <span className="exp-sticky-card__num">02</span>
+                    <div className="exp-sticky-card__body">
+                      <p className="exp-sticky-card__name">Shadow Infra</p>
+                      <p className="exp-sticky-card__category">DevOps · SRE</p>
+                      <p className="exp-sticky-card__desc">Mirrors live traffic to shadow pods on PR open, then diffs responses with a LangGraph pipeline to surface regressions before merge.</p>
+                      <p className="exp-sticky-card__stack">Go · FastAPI · Kubernetes · LangGraph · Supabase · React</p>
+                      <div className="exp-sticky-card__links">
+                        <a href="https://github.com/itsgeorgema/shadow-infra" target="_blank" className="cursor-can-hover">↗︎ GitHub</a>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
+
+                  {/* Row 2 */}
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
+                  <div className="exp-sticky-card">
+                    <span className="exp-sticky-card__num">03</span>
+                    <div className="exp-sticky-card__body">
+                      <p className="exp-sticky-card__name">Semantic Load Balancer</p>
+                      <p className="exp-sticky-card__category">Infra · Networking</p>
+                      <p className="exp-sticky-card__desc">L7 load balancer that routes requests to backends by the semantic content of the payload via a LiteLLM classifier.</p>
+                      <p className="exp-sticky-card__stack">Go · FastAPI · LiteLLM · Prometheus · Kubernetes · Next.js</p>
+                      <div className="exp-sticky-card__links">
+                        <a href="https://github.com/itsgeorgema/semantic-lb" target="_blank" className="cursor-can-hover">↗︎ GitHub</a>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
+                  <div className="exp-sticky-card">
+                    <span className="exp-sticky-card__num">04</span>
+                    <div className="exp-sticky-card__body">
+                      <p className="exp-sticky-card__name">Settle</p>
+                      <p className="exp-sticky-card__category">Mobile · AI</p>
+                      <p className="exp-sticky-card__desc">Android app that surfaces risky clauses in legal documents via live camera and on-device NPU inference — nothing leaves the phone.</p>
+                      <p className="exp-sticky-card__stack">Kotlin · Jetpack Compose · CameraX · ML Kit · LiteRT-LM · Qualcomm NPU</p>
+                      <div className="exp-sticky-card__links">
+                        <a href="https://github.com/anuragchillarige/team-bees" target="_blank" className="cursor-can-hover">↗︎ GitHub</a>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Row 3 — blank overlap zone: Grid B row 1 pulls up to sit here */}
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
+                </div>
+
+                {/* Grid B — Pokemon pinned col 2 (staircase step 2); pulled up 1 row to share row with Neural eBPF at handoff */}
+                <div className="exp-sticky-grid exp-sticky-grid--no-top-border" style={{ marginTop: 'calc(-1 * (100vw - 40px) / 4)' }}>
+
+                  {/* Row 3 */}
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
+                  <div className="exp-sticky-card exp-sticky-card--pinned">
+                    <span className="exp-sticky-card__num">05</span>
                     <div className="exp-sticky-card__body">
                       <p className="exp-sticky-card__name">Pokemon Generator</p>
                       <p className="exp-sticky-card__category">Deep Learning</p>
@@ -885,14 +938,8 @@ export default function HomePage() {
                       </div>
                     </div>
                   </div>
-                  <div className="exp-sticky-card exp-sticky-card--blank" />
-
-                  {/* Row 2 */}
-                  <div className="exp-sticky-card exp-sticky-card--blank" />
-                  <div className="exp-sticky-card exp-sticky-card--blank" />
-                  <div className="exp-sticky-card exp-sticky-card--blank" />
                   <div className="exp-sticky-card">
-                    <span className="exp-sticky-card__num">03</span>
+                    <span className="exp-sticky-card__num">06</span>
                     <div className="exp-sticky-card__body">
                       <p className="exp-sticky-card__name">Spotify Mood Player</p>
                       <p className="exp-sticky-card__category">Full-Stack AI</p>
@@ -905,27 +952,39 @@ export default function HomePage() {
                       </div>
                     </div>
                   </div>
-                </div>
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
 
-                {/* Grid B — rows 3-4: AKPsi sticks here, Pokemon Generator has exited */}
-                <div className="exp-sticky-grid exp-sticky-grid--no-top-border">
-
-                  {/* Row 3 */}
+                  {/* Row 4 */}
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
                   <div className="exp-sticky-card">
-                    <span className="exp-sticky-card__num">04</span>
+                    <span className="exp-sticky-card__num">07</span>
                     <div className="exp-sticky-card__body">
-                      <p className="exp-sticky-card__name">Text-Based Adventure</p>
-                      <p className="exp-sticky-card__category">CLI Game</p>
-                      <p className="exp-sticky-card__desc">Museum heist adventure game inspired by Zork, playable via CLI.</p>
-                      <p className="exp-sticky-card__stack">Java</p>
+                      <p className="exp-sticky-card__name">Watchdog</p>
+                      <p className="exp-sticky-card__category">DevOps · AI</p>
+                      <p className="exp-sticky-card__desc">AI-powered CI/CD automation for PR reviews, linting, and security checks.</p>
+                      <p className="exp-sticky-card__stack">Python · FastAPI · Node.js · GitHub Actions · OpenAI · AWS</p>
                       <div className="exp-sticky-card__links">
-                        <a href="https://github.com/itsgeorgema/text-based-adventure-game" target="_blank" className="cursor-can-hover">↗︎GitHub</a>
-                        <a href="https://www.youtube.com/watch?v=PNoRD2KLa6k" target="_blank" className="cursor-can-hover">Demo</a>
+                        <a href="https://github.com/itsgeorgema/watchdog" target="_blank" className="cursor-can-hover">↗︎ GitHub</a>
+                        <a href="https://www.youtube.com/watch?v=SPpE-DwsTb8" target="_blank" className="cursor-can-hover">Demo</a>
                       </div>
                     </div>
                   </div>
-                  <div className="exp-sticky-card exp-sticky-card--pinned">
-                    <span className="exp-sticky-card__num">05</span>
+
+                  {/* Blank overlap zone: Grid C row 1 pulls up to sit here */}
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
+                </div>
+
+                {/* Grid C — Portfolio pinned col 3 (staircase step 3); pulled up 1 row to share row with Pokemon at handoff */}
+                <div className="exp-sticky-grid exp-sticky-grid--no-top-border" style={{ marginTop: 'calc(-1 * (100vw - 40px) / 4)' }}>
+
+                  {/* Row 5 */}
+                  <div className="exp-sticky-card">
+                    <span className="exp-sticky-card__num">08</span>
                     <div className="exp-sticky-card__body">
                       <p className="exp-sticky-card__name">UCSD AKPsi Website</p>
                       <p className="exp-sticky-card__category">Full-Stack</p>
@@ -937,8 +996,9 @@ export default function HomePage() {
                       </div>
                     </div>
                   </div>
-                  <div className="exp-sticky-card">
-                    <span className="exp-sticky-card__num">06</span>
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
+                  <div className="exp-sticky-card exp-sticky-card--pinned">
+                    <span className="exp-sticky-card__num">09</span>
                     <div className="exp-sticky-card__body">
                       <p className="exp-sticky-card__name">This Portfolio</p>
                       <p className="exp-sticky-card__category">Portfolio</p>
@@ -952,12 +1012,24 @@ export default function HomePage() {
                   </div>
                   <div className="exp-sticky-card exp-sticky-card--blank" />
 
-                  {/* Row 4 */}
-                  <div className="exp-sticky-card exp-sticky-card--blank" />
-                  <div className="exp-sticky-card exp-sticky-card--blank" />
+                  {/* Row 6 */}
                   <div className="exp-sticky-card exp-sticky-card--blank" />
                   <div className="exp-sticky-card">
-                    <span className="exp-sticky-card__num">07</span>
+                    <span className="exp-sticky-card__num">10</span>
+                    <div className="exp-sticky-card__body">
+                      <p className="exp-sticky-card__name">Text-Based Adventure</p>
+                      <p className="exp-sticky-card__category">CLI Game</p>
+                      <p className="exp-sticky-card__desc">Museum heist adventure game inspired by Zork, playable via CLI.</p>
+                      <p className="exp-sticky-card__stack">Java</p>
+                      <div className="exp-sticky-card__links">
+                        <a href="https://github.com/itsgeorgema/text-based-adventure-game" target="_blank" className="cursor-can-hover">↗︎ GitHub</a>
+                        <a href="https://www.youtube.com/watch?v=PNoRD2KLa6k" target="_blank" className="cursor-can-hover">Demo</a>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
+                  <div className="exp-sticky-card">
+                    <span className="exp-sticky-card__num">11</span>
                     <div className="exp-sticky-card__body">
                       <p className="exp-sticky-card__name">NBA Draft Hub</p>
                       <p className="exp-sticky-card__category">Data Dashboard</p>
@@ -966,9 +1038,14 @@ export default function HomePage() {
                       <div className="exp-sticky-card__links">
                         <a href="https://nba-draft-hub-six.vercel.app/" target="_blank" className="cursor-can-hover">↗︎ Live</a>
                         <a href="https://github.com/itsgeorgema/nba-draft-hub" target="_blank" className="cursor-can-hover">GitHub</a>
-                      </div>  
+                      </div>
                     </div>
                   </div>
+                  {/* Row 3 — blank, extends Portfolio sticky to 2 rows */}
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
+                  <div className="exp-sticky-card exp-sticky-card--blank" />
                   <div className="mobile-grid-ghost" aria-hidden="true" />
                 </div>
 
