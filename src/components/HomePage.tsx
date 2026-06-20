@@ -856,7 +856,7 @@ export default function HomePage() {
                             <div className="resume-entry__content">
                               <p className="resume-entry__role">Software Engineer Co-op</p>
                               <p className="resume-entry__meta"><span className="resume-entry__company">IBM</span><span className="resume-entry__period">Feb 2026 — May 2026</span></p>
-                              <p className="resume-entry__tag">Automation and AI: IBM Bob</p>
+                              <p className="resume-entry__tag">Automation and AI: Full-Stack and Infrastructure</p>
                             </div>
                           </div>
 
@@ -865,7 +865,7 @@ export default function HomePage() {
                             <div className="resume-entry__content">
                               <p className="resume-entry__role">Software Engineer Intern</p>
                               <p className="resume-entry__meta"><span className="resume-entry__company">Praxie AI</span><span className="resume-entry__period">Apr 2025 — Feb 2026</span></p>
-                              <p className="resume-entry__tag">Mobile and Backend Infrastructure with GCP and React Native</p>
+                              <p className="resume-entry__tag">Product and Platform</p>
                             </div>
                           </div>
 
