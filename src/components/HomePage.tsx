@@ -521,6 +521,9 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
+    // Mobile/touch grid is fully static — no slide-in animation, no observer.
+    if (isTouchOrCoarse()) return;
+
     const projectCards = Array.from(document.querySelectorAll<HTMLElement>(".exp-sticky-grid"))
       .flatMap((grid) =>
         Array.from(grid.querySelectorAll<HTMLElement>(".exp-sticky-card"))
@@ -543,7 +546,7 @@ export default function HomePage() {
       card.dataset.scrollRepeat = "";
     });
 
-    if (!isTouchOrCoarse() || !("IntersectionObserver" in window)) {
+    if (!("IntersectionObserver" in window)) {
       return () => {
         projectCards.forEach((card) => {
           card.classList.remove("exp-sticky-card--slide-ready", "is-inview");

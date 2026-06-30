@@ -1540,6 +1540,14 @@ body.intro-active .mobile-projects-title {
     position: static;
   }
 
+  /* Grid is fully static on mobile — no slide-in animation */
+  .exp-sticky-card--slide-ready,
+  .exp-sticky-card--slide-ready[data-slide-direction="left"],
+  .exp-sticky-card--slide-ready[data-slide-direction="right"] {
+    transform: none !important;
+    transition: none !important;
+  }
+
   /* Hide blank spacer cells so content flows naturally in 2 columns */
   .exp-sticky-card--blank {
     display: none;
