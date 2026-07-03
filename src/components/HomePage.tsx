@@ -857,7 +857,7 @@ export default function HomePage() {
                           <div className="resume-entry">
                             <span className="resume-entry__num">02</span>
                             <div className="resume-entry__content">
-                              <p className="resume-entry__role">Software Engineer Co-op</p>
+                              <p className="resume-entry__role">Software Engineer Intern</p>
                               <p className="resume-entry__meta"><span className="resume-entry__company">IBM</span><span className="resume-entry__period">Feb 2026 — May 2026</span></p>
                               <p className="resume-entry__tag">Automation and AI: Full-Stack and Infrastructure</p>
                             </div>
