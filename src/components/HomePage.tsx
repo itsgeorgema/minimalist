@@ -1097,7 +1097,7 @@ export default function HomePage() {
                     <div className="exp-sticky-card__body">
                       <p className="exp-sticky-card__name">NBA Draft Hub</p>
                       <p className="exp-sticky-card__category">Data Dashboard</p>
-                      <p className="exp-sticky-card__desc">Stats and data explorer for the 2025 NBA Draft class.</p>
+                      <p className="exp-sticky-card__desc">Stats dashboard for the 2025 NBA Draft class.</p>
                       <p className="exp-sticky-card__stack">React · TypeScript · Vite · Tailwind</p>
                       <div className="exp-sticky-card__links">
                         <a href="https://nba-draft-hub-six.vercel.app/" target="_blank" className="cursor-can-hover">↗︎ Live</a>

@@ -631,6 +631,7 @@ body.intro-active:not(.intro-unveiled) #homepage {
 #homepage .title--bottom {
   margin-bottom: 0;
   margin-top: calc(-1vw + 25px);
+  pointer-events: none;
 }
 
 @media (max-width: 960px) {
