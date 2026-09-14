@@ -4,6 +4,7 @@ import "./globals.css";
 import ElasticCursor from "@/components/animations/elasticCursor";
 import CanvasBackground from "@/components/animations/CanvasBackgroundLazy";
 import { Analytics } from "@vercel/analytics/next";
+import { HERO_PRELOAD_HREF, HERO_SIZES, HERO_SRCSET } from "@/lib/heroImage";
 
 export const metadata: Metadata = {
   title: "George Ma",
@@ -29,9 +30,9 @@ export default function RootLayout({
           rel="preload"
           as="image"
           type="image/avif"
-          href="/assets/opt/milan-1600.avif"
-          imageSrcSet="/assets/opt/milan-800.avif 800w, /assets/opt/milan-1200.avif 1200w, /assets/opt/milan-1600.avif 1600w, /assets/opt/milan-2400.avif 2400w"
-          imageSizes="(max-width: 960px) 100vw, 55vw"
+          href={HERO_PRELOAD_HREF}
+          imageSrcSet={HERO_SRCSET.avif}
+          imageSizes={HERO_SIZES}
           fetchPriority="high"
         />
         <link

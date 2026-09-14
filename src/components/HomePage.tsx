@@ -5,22 +5,12 @@ import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 import { isTouchOrCoarse } from "@/components/util";
+import { HERO_FALLBACK, HERO_SIZES, HERO_SRCSET } from "@/lib/heroImage";
 
 gsap.registerPlugin(ScrollToPlugin);
 
 const MOBILE_BREAKPOINT = 960;
 
-// Hero image: pre-generated responsive AVIF/WebP/JPEG derivatives of the
-// 31 MB source PNG. Keep in sync with scripts/optimize-images.mjs.
-const HERO_WIDTHS = [800, 1200, 1600, 2400] as const;
-const HERO_SIZES = "(max-width: 960px) 100vw, 55vw";
-const heroSrcSet = (ext: string) =>
-  HERO_WIDTHS.map((w) => `/assets/opt/milan-${w}.${ext} ${w}w`).join(", ");
-const HERO_SRCSET = {
-  avif: heroSrcSet("avif"),
-  webp: heroSrcSet("webp"),
-  jpg: heroSrcSet("jpg"),
-};
 
 export default function HomePage() {
   const [year, setYear] = useState<number | null>(null);
@@ -835,7 +825,7 @@ export default function HomePage() {
                                 />
                                 <img
                                   className="hero-featured-img"
-                                  src="/assets/opt/milan-1600.jpg"
+                                  src={HERO_FALLBACK}
                                   srcSet={HERO_SRCSET.jpg}
                                   sizes={HERO_SIZES}
                                   alt="Featured"
