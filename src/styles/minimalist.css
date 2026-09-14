@@ -5,49 +5,63 @@
   font-family: "Helvetica";
   font-style: normal;
   font-weight: 300;
-  src: url("/helvetica-255/helvetica-light-587ebe5a59211.ttf") format("truetype");
+  src: url("/helvetica-255/helvetica-light-587ebe5a59211.woff2") format("woff2"),
+       url("/helvetica-255/helvetica-light-587ebe5a59211.ttf") format("truetype");
+  font-display: swap;
 }
 
 @font-face {
   font-family: "Helvetica";
   font-style: normal;
   font-weight: 400;
-  src: url("/helvetica-255/Helvetica.ttf") format("truetype");
+  src: url("/helvetica-255/Helvetica.woff2") format("woff2"),
+       url("/helvetica-255/Helvetica.ttf") format("truetype");
+  font-display: swap;
 }
 
 @font-face {
   font-family: "Helvetica";
   font-style: normal;
   font-weight: 500;
-  src: url("/helvetica-255/Helvetica.ttf") format("truetype");
+  src: url("/helvetica-255/Helvetica.woff2") format("woff2"),
+       url("/helvetica-255/Helvetica.ttf") format("truetype");
+  font-display: swap;
 }
 
 @font-face {
   font-family: "Helvetica";
   font-style: normal;
   font-weight: 700;
-  src: url("/helvetica-255/Helvetica-Bold.ttf") format("truetype");
+  src: url("/helvetica-255/Helvetica-Bold.woff2") format("woff2"),
+       url("/helvetica-255/Helvetica-Bold.ttf") format("truetype");
+  font-display: swap;
 }
 
 @font-face {
   font-family: "Helvetica";
   font-style: italic;
   font-weight: 400;
-  src: url("/helvetica-255/Helvetica-Oblique.ttf") format("truetype");
+  src: url("/helvetica-255/Helvetica-Oblique.woff2") format("woff2"),
+       url("/helvetica-255/Helvetica-Oblique.ttf") format("truetype");
+  font-display: swap;
 }
 
 @font-face {
   font-family: "Helvetica";
   font-style: italic;
   font-weight: 700;
-  src: url("/helvetica-255/Helvetica-BoldOblique.ttf") format("truetype");
+  src: url("/helvetica-255/Helvetica-BoldOblique.woff2") format("woff2"),
+       url("/helvetica-255/Helvetica-BoldOblique.ttf") format("truetype");
+  font-display: swap;
 }
 
 @font-face {
   font-family: "Helvetica Compressed";
   font-style: normal;
   font-weight: 400;
-  src: url("/helvetica-255/helvetica-compressed-5871d14b6903a.otf") format("opentype");
+  src: url("/helvetica-255/helvetica-compressed-5871d14b6903a.woff2") format("woff2"),
+       url("/helvetica-255/helvetica-compressed-5871d14b6903a.otf") format("opentype");
+  font-display: swap;
 }
 
 /* --------------------------------------------------------------------------
@@ -815,7 +829,12 @@ body:not(.intro-active) #homepage .hero-featured-img {
   width: 100%;
 }
 
-.responsive-image > img {
+.responsive-image > picture {
+  display: contents;
+}
+
+.responsive-image > img,
+.responsive-image > picture > img {
   bottom: 0;
   height: 100%;
   left: 0;

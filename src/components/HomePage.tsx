@@ -10,6 +10,18 @@ gsap.registerPlugin(ScrollToPlugin);
 
 const MOBILE_BREAKPOINT = 960;
 
+// Hero image: pre-generated responsive AVIF/WebP/JPEG derivatives of the
+// 31 MB source PNG. Keep in sync with scripts/optimize-images.mjs.
+const HERO_WIDTHS = [800, 1200, 1600, 2400] as const;
+const HERO_SIZES = "(max-width: 960px) 100vw, 55vw";
+const heroSrcSet = (ext: string) =>
+  HERO_WIDTHS.map((w) => `/assets/opt/milan-${w}.${ext} ${w}w`).join(", ");
+const HERO_SRCSET = {
+  avif: heroSrcSet("avif"),
+  webp: heroSrcSet("webp"),
+  jpg: heroSrcSet("jpg"),
+};
+
 export default function HomePage() {
   const [year, setYear] = useState<number | null>(null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -810,15 +822,30 @@ export default function HomePage() {
                               style={{ paddingTop: "125%" }}
                             >
                               <span className="hero-image-base" aria-hidden="true" />
-                              <img
-                                className="hero-featured-img"
-                                src="/assets/milan.png"
-                                alt="Featured"
-                                width={1600}
-                                height={2000}
-                                loading="eager"
-                                fetchPriority="high"
-                              />
+                              <picture>
+                                <source
+                                  type="image/avif"
+                                  srcSet={HERO_SRCSET.avif}
+                                  sizes={HERO_SIZES}
+                                />
+                                <source
+                                  type="image/webp"
+                                  srcSet={HERO_SRCSET.webp}
+                                  sizes={HERO_SIZES}
+                                />
+                                <img
+                                  className="hero-featured-img"
+                                  src="/assets/opt/milan-1600.jpg"
+                                  srcSet={HERO_SRCSET.jpg}
+                                  sizes={HERO_SIZES}
+                                  alt="Featured"
+                                  width={1600}
+                                  height={2000}
+                                  loading="eager"
+                                  fetchPriority="high"
+                                  decoding="async"
+                                />
+                              </picture>
                             </div>
                           </div>
                         </div>

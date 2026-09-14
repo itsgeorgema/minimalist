@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "optimize:images": "node scripts/optimize-images.mjs"
   },
   "dependencies": {
     "@types/three": "^0.183.1",
@@ -30,6 +31,7 @@
     "eslint-config-next": "^16.2.2",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
-    "typescript": "^5.6.0"
+    "typescript": "^5.6.0",
+    "sharp": "^0.34.2"
   }
 }
